@@ -24,7 +24,7 @@ void on_center_button() {
 		pros::lcd::clear_line(2);
 	}
 }
-
+//Tesigninsfa
 pros::Controller controller(pros::E_CONTROLLER_MASTER);
 
 
@@ -79,8 +79,7 @@ lemlib::ControllerSettings lateral_controller(5, // proportional gain (kP)
 );
 
 // angular PID controller
-lemlib::ControllerSettings
-    angular_controller(1.52,   // proportional gain (kP)
+lemlib::ControllerSettings angular_controller(1.52,   // proportional gain (kP)
                        0.05,   // integral gain (kI) .03 too little
                        14.046,  // derivative gain (kD)//10.7 w/ ki  14.5
                        27,   // anti windup  3.25184
@@ -89,7 +88,7 @@ lemlib::ControllerSettings
                        3,   // large error range, in degrees  3
                        500, // large error range timeout, in milliseconds  500
                        0    // maximum acceleration (slew)  0
-    );
+);
 
 lemlib::ExpoDriveCurve throttle_curve(3, // joystick deadband out of 127
                                      10, // minimum output where drivetrain will move out of 127
