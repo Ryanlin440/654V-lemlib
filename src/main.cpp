@@ -467,23 +467,25 @@ void skills() {
 
 void descoreMacro(bool otherSide){
     chassis.setPose(0,0,0);
-    chassis.moveToPoint(0, 3, 1000);
-    pros::delay(100);
-    chassis.moveToPose(12.5, 12, 15, 2000, {.lead = .3, .minSpeed = 50});
-    chassis.turnToHeading(-6, 500, {}, false);
+    //11, 6, 12
+    chassis.moveToPose(12.3, 12, 10, 2000, {.lead = .3, .minSpeed = 50});
+    chassis.turnToHeading(1, 500, {}, false);
     leftDescore.set_value(LOW);
-    pros::delay(1000);
-    chassis.moveToPoint(12, 0, 1000, {.forwards = false, .minSpeed = 50});
+    pros::delay(100);
+
+    chassis.moveToPoint(12, -5, 1000, {.forwards = false, .minSpeed = 50});
+    pros::delay(550);
     chassis.turnToHeading(15, 500, {}, false);
-    chassis.moveToPoint(10.5, -15, 2000, {.forwards = false, .minSpeed = 50});
-    // if(otherSide){
-    //     pros::delay(2000);
-    //     leftDescore.set_value(HIGH);
-    //     chassis.turnToHeading(185, 500, {}, false);
-    //     pros::delay(250);
-    //     chassis.moveToPoint(54, 9, 1000, {.forwards = false, .minSpeed = 75});
-    //     leftDescore.set_value(LOW);
-    // }
+    chassis.moveToPoint(10.5, -12, 2000, {.forwards = false, .minSpeed = 100});
+
+    if(otherSide){
+        chassis.moveToPoint(11, -10, 500, {.forwards = false, .minSpeed = 100});
+        leftDescore.set_value(HIGH);
+        pros::delay(350);
+        chassis.moveToPoint(9, -45, 2000, {.forwards = false, .minSpeed = 75});
+        pros::delay(300);
+        leftDescore.set_value(LOW);
+    }
 }
 
 /**
@@ -518,7 +520,8 @@ void opcontrol() {
         if (controller.get_digital_new_press(DIGITAL_X)) {
           forwardOritentiation=!forwardOritentiation;
         }
-        if (controller.get_digital_new_press(DIGITAL_A)) {
+        if (controller.get_digital_new_press(DIGITAL_A) 
+        && controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_LEFT)) {
           descoreMacro(true);
         }
         if (controller.get_digital(DIGITAL_L2)) {
