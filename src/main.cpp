@@ -24,7 +24,7 @@ void on_center_button() {
 		pros::lcd::clear_line(2);
 	}
 }
-//Tesigninsfadfgawerefs
+
 pros::Controller controller(pros::E_CONTROLLER_MASTER);
 
 
@@ -245,7 +245,7 @@ void leftSimpleAWP() {
     chassis.moveToPoint(-45, 51, 5000);/////
     scraper.set_value(HIGH);
     chassis.turnToHeading(270, 1000, {}, false);//Turn to point instead incase its misaligned?
-    chassis.setPose(-47, 47, 270);//What is this for
+    chassis.setPose(-47, 47, 270);
     chassis.moveToPoint(-60, 47, 1000, {.minSpeed = 60});
 	conveyorMotor.move(127);
     pros::delay(00);//what does this delay do
@@ -465,6 +465,29 @@ void skills() {
 
 }
 
+void descoreMacro(bool otherSide){
+    chassis.setPose(0,0,0);
+    //11, 6, 12
+    chassis.moveToPose(12.3, 12, 10, 2000, {.lead = .3, .minSpeed = 50});
+    chassis.turnToHeading(1, 500, {}, false);
+    leftDescore.set_value(LOW);
+    pros::delay(100);
+
+    chassis.moveToPoint(12, -5, 1000, {.forwards = false, .minSpeed = 50});
+    pros::delay(550);
+    chassis.turnToHeading(15, 500, {}, false);
+    chassis.moveToPoint(10.5, -12, 2000, {.forwards = false, .minSpeed = 100});
+
+    if(otherSide){
+        chassis.moveToPoint(11, -10, 500, {.forwards = false, .minSpeed = 100});
+        leftDescore.set_value(HIGH);
+        pros::delay(350);
+        chassis.moveToPoint(9, -45, 2000, {.forwards = false, .minSpeed = 75});
+        pros::delay(300);
+        leftDescore.set_value(LOW);
+    }
+}
+
 /**
  * Runs the operator control code. This function will be started in its own task
  * with the default priority and stack size whenever the robot is enabled via
@@ -496,6 +519,10 @@ void opcontrol() {
         // delay to save resources
         if (controller.get_digital_new_press(DIGITAL_X)) {
           forwardOritentiation=!forwardOritentiation;
+        }
+        if (controller.get_digital_new_press(DIGITAL_A) 
+        && controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_LEFT)) {
+          descoreMacro(true);
         }
         if (controller.get_digital(DIGITAL_L2)) {
           conveyorMotor.move(127);
