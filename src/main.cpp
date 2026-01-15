@@ -68,21 +68,21 @@ lemlib::OdomSensors sensors(
 );
 // lateral PID controller
 lemlib::ControllerSettings lateral_controller(5, // proportional gain (kP)
-                                              0.09, // integral gain (kI)-.006 over .41
+                                              0.12, // integral gain (kI)-.006 over .41
                                               21, // derivative gain (kD)
-                                              5, // anti windup 1.8
+                                              6, // anti windup 1.8
                                               1, // small error range, in inches  1
                                               100, // small error range timeout, in milliseconds 100
                                             3, // large error range, in inches  3
                                               500, // large error range timeout, in milliseconds 500
-                                              30 // maximum acceleration (slew)
+                                              20 // maximum acceleration (slew)30
 );
 
 // angular PID controller
-lemlib::ControllerSettings angular_controller(1.52,   // proportional gain (kP)
-                       0.05,   // integral gain (kI) .03 too little
-                       14.046,  // derivative gain (kD)//10.7 w/ ki  14.5
-                       27,   // anti windup  3.25184
+lemlib::ControllerSettings angular_controller(2.5,   // proportional gain (kP)
+                       0.08,   // integral gain (kI) .03 too little
+                       25.0402,  // derivative gain (kD)//10.7 w/ ki  14.5
+                       25,   // anti windup  3.25184
                         1,   // small error range, in degrees  1
                        100, // small error range timeout, in milliseconds  100
                        3,   // large error range, in degrees  3
@@ -172,7 +172,6 @@ void initialize() {
       }
     });
 
-
     autonSelector();//remove this aswell
     autonomous();//⚠️ Remove this before competitions.
 }
@@ -200,12 +199,12 @@ void competition_initialize() {//0 is left 1 is right 2 is  sawp 3 is skills, 4 
 //   autonSelector();
     // selectedAuton = 0;  //change this everytime
 }
-void tuningLateralKD() {
-        chassis.turnToPoint(0, 24, 5000);
-        chassis.moveToPoint(0, 24, 5000);
-        chassis.turnToPoint(0, 48, 5000);
-        chassis.moveToPoint(0, 48, 5000);
-        chassis.moveToPose(0, 0, 0, 5000, {.forwards = false});//.earlyExitRange = 0}
+void tuningLateralPD() {
+        chassis.turnToPoint(0, 24, 2000);
+        chassis.moveToPoint(0, 24, 2000);
+        chassis.turnToPoint(0, 48, 2000);
+        chassis.moveToPoint(0, 48, 2000);
+        chassis.moveToPose(0, 0, 0, 2000, {.forwards = false});//.earlyExitRange = 0}
 }
 void tuningLateralI() {
         chassis.turnToPoint(0, 24, 5000);
@@ -220,7 +219,7 @@ void tuningLateralI() {
   
 }
 
-void tuningAngularKD() {
+void tuningAngularPD() {
         chassis.turnToHeading(90, 5000);
         chassis.turnToHeading(180, 5000);
         chassis.turnToHeading(0, 5000);
@@ -339,31 +338,46 @@ chassis.moveToPose(
   
 }//mirror y values
 void SAWP() { // place only on right side
-  chassis.setPose(0, 0, 0);
-  chassis.moveToPoint(0, 2 ,2000);
-    // chassis.moveToPoint(-45, -40, 5000);
-    // chassis.moveToPose(-56, -47, 270, 5000);
-    // scraper.set_value(HIGH);
-    // conveyorMotor.move(127);
 
-    // chassis.turnToHeading(270, 2000);
-    // chassis.moveToPoint(-30, -47, 5000, {.forwards = false});
-    // topMotor.move(127);
-    // scraper.set_value(LOW);
-    // chassis.swingToHeading(45, lemlib::DriveSide::RIGHT, 2000);
-    // chassis.moveToPoint(-22, -22, 5000);
-    // chassis.turnToHeading(0, 2000);
-    // topMotor.move(0);
-    // chassis.moveToPoint(-22, 22, 5000);
-    // chassis.turnToHeading(315, 1000);
-    // chassis.moveToPoint(-12, 12, 5000,  {.forwards = false});
-    // pros::delay(1000);
-    // pros::delay(2000);
-    // chassis.moveToPoint(-47, 47, 5000);
+    chassis.moveToPoint(-45, -40, 2000, {.minSpeed = 60, .earlyExitRange = 3}); //Position first 
+    chassis.moveToPose(-60, -51, 255, 1000, {.minSpeed = 60});//The scraper boomerang
+
+    scraper.set_value(HIGH);
+    conveyorMotor.move(127);
+    chassis.turnToPoint(-20, -47, 500, {.forwards = false});
+
+    chassis.moveToPoint(-20, -47,2000, {.forwards = false}); //Long goal - X smaller to get closer
+    pros::delay(600);
+    topMotor.move(127);
+    scraper.set_value(LOW);
+    pros::delay(1000);
+    topMotor.move(0);
+    chassis.moveToPoint(-25, -27, 5000, {.minSpeed=40, .earlyExitRange=1});
+    pros::delay(1000);
+    // // scraper.set_value(HIGH);
+    // // pros::delay(500);
+    chassis.turnToPoint(-25, 27, 2000, {}, false);
+    // // scraper.set_value(LOW);
+    chassis.moveToPoint(-25, 27, 2000, {}, false);
+    chassis.setPose(-24, 24, 0);
+    scraper.set_value(HIGH);
+    // //Middle scoring part
+    chassis.turnToPoint(-12,12, 1000, {.forwards = false});
+    chassis.moveToPoint(-12, 12, 5000,  {.forwards = false});
+    pros::delay(100);
+    topMotor.move(50);
+    chassis.turnToPoint(-47, 54, 2000);
+    chassis.moveToPoint(-47, 54, 5000);
+    topMotor.move(0);
     // scraper.set_value(HIGH);
-    // chassis.moveToPoint(-56, 47, 5000);
-    // chassis.moveToPoint(-30, 47, 5000, {.forwards = false});
-    // pros::delay(2000);
+    chassis.turnToPoint(-56, 54, 2000);
+    chassis.moveToPoint(-56, 54, 5000, {.minSpeed=40});
+    pros::delay(1000);
+    chassis.turnToPoint(-30, 54, 2000, {.forwards = false});
+    chassis.moveToPoint(-30, 54, 5000, {.forwards = false, .minSpeed=40});
+    pros::delay(600);
+    topMotor.move(127);
+    pros::delay(2000);
     // topMotor.move(127);
 
 }
@@ -476,7 +490,6 @@ void skills() {
 // chassis.moveToPoint(-62.375, 0, 5000);
 
 }
-
 void descoreMacro(bool otherSide){
     chassis.setPose(0,0,0);
     //11, 6, 12
@@ -517,6 +530,8 @@ void descoreMacro(bool otherSide){
 void opcontrol() {
     // chassis.setPose(-61.3, 16.8, 90);
     // leftSimpleAWP();
+    // tuningLateralPD();
+
 	while (true) {
         // get joystick positions
         int leftY = controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
