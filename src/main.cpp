@@ -341,11 +341,13 @@ chassis.moveToPose(
 void SAWP() { // place only on right side
 
     chassis.moveToPoint(-45, -40, 2000, {.minSpeed = 60, .earlyExitRange = 5}); //Position first 
-    chassis.moveToPose(-59, -49, 266, 800, { .minSpeed = 50});//The scraper boomerang
     scraper.set_value(HIGH);
+    chassis.moveToPose(-58, -46, 270, 1000, {.lead = .1, .minSpeed = 60});//The scraper boomerang
+    chassis.turnToHeading(270, 500);
+    chassis.moveToPoint(-61, -47, 1000);
     conveyorMotor.move(127);
     pros::delay(1000);
-    chassis.turnToPoint(-25, -48, 1000, {.forwards = false});
+    // chassis.turnToPoint(-25, -48, 1000, {.forwards = false}); - not needed if straight
     chassis.moveToPoint(-25, -48,4000, {.forwards = false}); //Long goal - X smaller to get closer
     pros::delay(600);
     topMotor.move(127);
@@ -354,33 +356,33 @@ void SAWP() { // place only on right side
     topMotor.move(0);
     chassis.moveToPoint(-24, -27, 5000, {.minSpeed=40, .earlyExitRange=1});
     pros::delay(1000);
-    // scraper.set_value(HIGH);
-    // // pros::delay(500);
+    scraper.set_value(HIGH);
+    pros::delay(500);
     chassis.turnToPoint(-24, 26, 2000, {}, false);
-    // // scraper.set_value(LOW);
-    chassis.moveToPoint(-24, 26, 2000, {}, false);
-    chassis.setPose(-24, 24, 0);
-    // scraper.set_value(HIGH);
-    // // //Middle scoring part
-    chassis.turnToPoint(-12,12, 1000, {.forwards = false});
-    chassis.moveToPoint(-12, 12, 5000,  {.forwards = false});
-    pros::delay(100);
-    topMotor.move(50);
-    chassis.turnToPoint(-47, 54, 2000);
-    chassis.moveToPoint(-47, 54, 5000);
-    topMotor.move(0);
-    // scraper.set_value(HIGH);
-    chassis.turnToPoint(-56, 54, 2000);
-    chassis.moveToPoint(-56, 54, 5000, {.minSpeed=40});
-    pros::delay(1000);
-    chassis.turnToPoint(-30, 54, 2000, {.forwards = false});
-    chassis.moveToPoint(-30, 54, 5000, {.forwards = false, .minSpeed=40});
-    pros::delay(600);
-    topMotor.move(127);
-    pros::delay(2000);
+    scraper.set_value(LOW);
+    // chassis.moveToPoint(-24, 26, 2000, {}, false);
+    // chassis.setPose(-24, 24, 0);
+    // // scraper.set_value(HIGH);
+    // // // //Middle scoring part
+    // chassis.turnToPoint(-12,12, 1000, {.forwards = false});
+    // chassis.moveToPoint(-12, 12, 5000,  {.forwards = false});
+    // pros::delay(100);
+    // topMotor.move(50);
+    // chassis.turnToPoint(-47, 54, 2000);
+    // chassis.moveToPoint(-47, 54, 5000);
+    // topMotor.move(0);
+    // // scraper.set_value(HIGH);
+    // chassis.turnToPoint(-56, 54, 2000);
+    // chassis.moveToPoint(-56, 54, 5000, {.minSpeed=40});
+    // pros::delay(1000);
+    // chassis.turnToPoint(-30, 54, 2000, {.forwards = false});
+    // chassis.moveToPoint(-30, 54, 5000, {.forwards = false, .minSpeed=40});
+    // pros::delay(600);
     // topMotor.move(127);
-
+    // pros::delay(2000);
+    // // topMotor.move(127);
 }
+
 void skills() {
     chassis.moveToPose(
       -22.22, 22.22, 30, 2000,
