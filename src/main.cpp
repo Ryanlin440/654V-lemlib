@@ -171,6 +171,8 @@ void initialize() {
         pros::delay(50);
       }
     });
+
+
     autonSelector();//remove this aswell
     autonomous();//⚠️ Remove this before competitions.
 }
@@ -198,33 +200,43 @@ void competition_initialize() {//0 is left 1 is right 2 is  sawp 3 is skills, 4 
 //   autonSelector();
     // selectedAuton = 0;  //change this everytime
 }
+void tuningLateralKD() {
+        chassis.turnToPoint(0, 24, 5000);
+        chassis.moveToPoint(0, 24, 5000);
+        chassis.turnToPoint(0, 48, 5000);
+        chassis.moveToPoint(0, 48, 5000);
+        chassis.moveToPose(0, 0, 0, 5000, {.forwards = false});//.earlyExitRange = 0}
+}
+void tuningLateralI() {
+        chassis.turnToPoint(0, 24, 5000);
+        chassis.moveToPoint(0, 24, 5000);
+        pros::delay(6000);
 
+        chassis.turnToPoint(0, 48, 5000);
+        chassis.moveToPoint(0, 48, 5000);
+        pros::delay(6000);
 
-void testing() {
-  	chassis.setPose(0, 0, 0);
-        // // pros::delay(3000);
-        // chassis.turnToPoint(0, 24, 1000);
-        // chassis.moveToPoint(0, 24, 2000);
-        // // chassis.moveToPose(0, 24,0,4000);
-        // pros::delay(6000);
-        // chassis.turnToPoint(0, 48, 1000);
+        chassis.moveToPose(0, 0, 0, 4000, {.forwards = false});//.earlyExitRange = 0}
+  
+}
 
-        // chassis.moveToPoint(0, 48, 2000);
-        // pros::delay(6000);
-
-        // // // chassis.turnToHeading(0, 5000);
-        // // // 
-        // chassis.moveToPose(0, 0, 0, 4000, {.forwards = false});//.earlyExitRange = 0}
-
+void tuningAngularKD() {
         chassis.turnToHeading(90, 5000);
-        pros::delay(3000);
         chassis.turnToHeading(180, 5000);
-        pros::delay(3000);
         chassis.turnToHeading(0, 5000);
 
-    
-    
 }
+void tuningAngularI() {
+        chassis.turnToHeading(90, 5000);
+        pros::delay(5000);
+        chassis.turnToHeading(180, 5000);
+        pros::delay(5000);
+        chassis.turnToHeading(0, 5000);
+}
+
+
+
+
 void leftSimpleAWP() {
     chassis.moveToPose(
       -22.22, 22.22, 30, 2000,
@@ -503,7 +515,6 @@ void descoreMacro(bool otherSide){
  */
 
 void opcontrol() {
-    // testing();
     // chassis.setPose(-61.3, 16.8, 90);
     // leftSimpleAWP();
 	while (true) {
