@@ -339,7 +339,7 @@ chassis.moveToPose(
   
 }//mirror y values
 void SAWP() { // place only on right side
-
+    //First loader
     chassis.moveToPoint(-45, -40, 2000, {.minSpeed = 60, .earlyExitRange = 5}); //Position first 
     scraper.set_value(HIGH);
     chassis.moveToPose(-58, -46, 270, 1000, {.lead = .1, .minSpeed = 60});//The scraper boomerang
@@ -347,23 +347,31 @@ void SAWP() { // place only on right side
     chassis.moveToPoint(-61, -47, 1000);
     conveyorMotor.move(127);
     pros::delay(1000);
-    // chassis.turnToPoint(-25, -48, 1000, {.forwards = false}); - not needed if straight
+
+    //Scoring in first goal
+    chassis.turnToPoint(-25, -48, 1000, {.forwards = false}); // not needed if straight
     chassis.moveToPoint(-25, -48,4000, {.forwards = false}); //Long goal - X smaller to get closer
     pros::delay(600);
     topMotor.move(127);
     scraper.set_value(LOW);
     pros::delay(1000);
     topMotor.move(0);
+
+    //First 3 balls
     chassis.moveToPoint(-24, -27, 5000, {.minSpeed=40, .earlyExitRange=1});
     pros::delay(1000);
     scraper.set_value(HIGH);
     pros::delay(500);
     chassis.turnToPoint(-24, 26, 2000, {}, false);
     scraper.set_value(LOW);
+
+    // Second 3 balls
     // chassis.moveToPoint(-24, 26, 2000, {}, false);
+    // pros::delay(500); // Need to adjust this wait to work.
+    // scraper.set_value(HIGH);
     // chassis.setPose(-24, 24, 0);
-    // // scraper.set_value(HIGH);
-    // // // //Middle scoring part
+ 
+    // Middle scoring part
     // chassis.turnToPoint(-12,12, 1000, {.forwards = false});
     // chassis.moveToPoint(-12, 12, 5000,  {.forwards = false});
     // pros::delay(100);
@@ -371,18 +379,21 @@ void SAWP() { // place only on right side
     // chassis.turnToPoint(-47, 54, 2000);
     // chassis.moveToPoint(-47, 54, 5000);
     // topMotor.move(0);
+
+    // Second loader
     // // scraper.set_value(HIGH);
     // chassis.turnToPoint(-56, 54, 2000);
     // chassis.moveToPoint(-56, 54, 5000, {.minSpeed=40});
     // pros::delay(1000);
+
+    // Second goal scoring
     // chassis.turnToPoint(-30, 54, 2000, {.forwards = false});
     // chassis.moveToPoint(-30, 54, 5000, {.forwards = false, .minSpeed=40});
     // pros::delay(600);
     // topMotor.move(127);
     // pros::delay(2000);
-    // // topMotor.move(127);
+    // topMotor.move(127);
 }
-
 void skills() {
     chassis.moveToPose(
       -22.22, 22.22, 30, 2000,
@@ -492,6 +503,7 @@ void skills() {
 // chassis.moveToPoint(-62.375, 0, 5000);
 
 }
+
 void descoreMacro(bool otherSide){
     chassis.setPose(0,0,0);
     //11, 6, 12
@@ -499,6 +511,9 @@ void descoreMacro(bool otherSide){
     chassis.turnToHeading(1, 500, {}, false);
     leftDescore.set_value(LOW);
     pros::delay(100);
+
+    // make it move to pose
+    // chassis.moveToPose(10.5, -12, 180, 2000, {.lead = .5, .minSpeed = 100});
 
     chassis.moveToPoint(12, -5, 1000, {.forwards = false, .minSpeed = 50});
     pros::delay(550);
@@ -549,8 +564,7 @@ void opcontrol() {
         if (controller.get_digital_new_press(DIGITAL_X)) {
           forwardOritentiation=!forwardOritentiation;
         }
-        if (controller.get_digital_new_press(DIGITAL_A) 
-        && controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_LEFT)) {
+        if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_LEFT)) {
           descoreMacro(true);
         }
         if (controller.get_digital(DIGITAL_L2)) {
