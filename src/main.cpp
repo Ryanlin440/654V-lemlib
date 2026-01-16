@@ -376,8 +376,8 @@ void SAWP() { // place only on right side
     chassis.turnToPoint(-12,12, 1000, {.forwards = false});
     chassis.moveToPoint(-12, 12, 5000,  {.forwards = false});
     // pros::delay(100);
-    topMotor.move(60);
-    pros::delay(2000);
+    topMotor.move(50);
+    pros::delay(1000);
     // chassis.turnToPoint(-47, 47, 2000);
     chassis.moveToPoint(-52, 53, 5000);
     topMotor.move(0);
@@ -385,7 +385,7 @@ void SAWP() { // place only on right side
     // // Second loader
     // // scraper.set_value(HIGH);
     chassis.turnToPoint(-60, 53, 2000);
-    chassis.moveToPoint(-60, 53, 5000, {.minSpeed=40});
+    chassis.moveToPoint(-60, 53, 3000, {.minSpeed=40});
     pros::delay(1000);
 
     // Second goal scoring
@@ -510,26 +510,19 @@ void descoreMacro(bool otherSide){
     chassis.setPose(0,0,0);
     //11, 6, 12
     chassis.moveToPose(12.3, 12, 10, 2000, {.lead = .3, .minSpeed = 50});
-    chassis.turnToHeading(1, 500, {}, false);
+    chassis.turnToHeading(3, 500, {}, false);
     leftDescore.set_value(LOW);
     pros::delay(100);
+    chassis.moveToPoint(11, -12, 2000, {.forwards = false, .minSpeed = 75});
 
-    // make it move to pose
-    // chassis.moveToPose(10.5, -12, 180, 2000, {.lead = .5, .minSpeed = 100});
-
-    chassis.moveToPoint(12, -5, 1000, {.forwards = false, .minSpeed = 50});
-    pros::delay(550);
-    chassis.turnToHeading(15, 500, {}, false);
-    chassis.moveToPoint(10.5, -12, 2000, {.forwards = false, .minSpeed = 100});
-
-    if(otherSide){
-        chassis.moveToPoint(11, -10, 500, {.forwards = false, .minSpeed = 100});
-        leftDescore.set_value(HIGH);
-        pros::delay(350);
-        chassis.moveToPoint(9, -45, 2000, {.forwards = false, .minSpeed = 75});
-        pros::delay(300);
-        leftDescore.set_value(LOW);
-    }
+    // if(otherSide){
+    //     chassis.moveToPoint(11, -10, 500, {.forwards = false, .minSpeed = 100});
+    //     leftDescore.set_value(HIGH);
+    //     pros::delay(350);
+    //     chassis.moveToPoint(9, -45, 2000, {.forwards = false, .minSpeed = 75});
+    //     pros::delay(300);
+    //     leftDescore.set_value(LOW);
+    // }
 }
 
 /**
