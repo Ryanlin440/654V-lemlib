@@ -172,9 +172,8 @@ void initialize() {
       }
     });
 
-
-    autonSelector();//remove this aswell
-    autonomous();//⚠️ Remove this before competitions.
+    // autonSelector();//remove this aswell
+    // autonomous();//⚠️ Remove this before competitions.
 }
 
 /**
@@ -506,23 +505,19 @@ void skills() {
 
 }
 
-void descoreMacro(bool otherSide){
+void descoreMacro(){
+    forwardOritentiation = false;
     chassis.setPose(0,0,0);
     //11, 6, 12
-    chassis.moveToPose(12.3, 12, 10, 2000, {.lead = .3, .minSpeed = 50});
-    chassis.turnToHeading(3, 500, {}, false);
+    chassis.moveToPose(12.3, 12, 3, 2000, {.lead = .6, .minSpeed = 50});
+    // increase .lead to make turn smoother. change theta to 3
+    // chassis.turnToHeading(3, 500, {}, false);
+    // not needed if movetopose works
     leftDescore.set_value(LOW);
     pros::delay(100);
-    chassis.moveToPoint(11, -12, 2000, {.forwards = false, .minSpeed = 75});
-
-    // if(otherSide){
-    //     chassis.moveToPoint(11, -10, 500, {.forwards = false, .minSpeed = 100});
-    //     leftDescore.set_value(HIGH);
-    //     pros::delay(350);
-    //     chassis.moveToPoint(9, -45, 2000, {.forwards = false, .minSpeed = 75});
-    //     pros::delay(300);
-    //     leftDescore.set_value(LOW);
-    // }
+    // chassis.moveToPoint(11, -12, 2000, {.forwards = false, .minSpeed = 75});
+    chassis.moveToPose(11, -12, -5, 1000, {.forwards = false, .lead = .3, .minSpeed = 75});
+    //change values to make it better
 }
 
 /**
@@ -560,7 +555,7 @@ void opcontrol() {
           forwardOritentiation=!forwardOritentiation;
         }
         if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_LEFT)) {
-          descoreMacro(true);
+          descoreMacro();
         }
         if (controller.get_digital(DIGITAL_L2)) {
           conveyorMotor.move(127);
