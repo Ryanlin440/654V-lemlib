@@ -259,8 +259,8 @@ void leftSimpleAWP() {
     chassis.setPose(-47, 47, 270);
     chassis.moveToPoint(-60, 47, 1000, {.minSpeed = 60});
 	conveyorMotor.move(127);
-    pros::delay(00);//what does this delay do
-    chassis.turnToHeading(270, 1000);//Isn't already turned at 270? on line 248
+    pros::delay(1000);
+    chassis.turnToHeading(270, 1000);
     chassis.moveToPoint(-27, 47, 2000, {.forwards = false});//On Jerryio, 46.5 is a better y than 47. 
     pros::delay(500);
     topMotor.move(127);
@@ -507,19 +507,13 @@ void skills() {
 
 void descoreMacro(){
     forwardOritentiation = false;
+    scraper.set_value(LOW);
     chassis.setPose(0,0,0);
-    //11, 6, 12
-    chassis.moveToPose(12.3, 12, 3, 2000, {.lead = .6, .minSpeed = 50});
-    // increase .lead to make turn smoother. change theta to 3
-    // chassis.turnToHeading(3, 500, {}, false);
-    // not needed if movetopose works
-    leftDescore.set_value(LOW);
+    chassis.moveToPose(12.3, 14, 3, 1000, {.lead = .01, .minSpeed = 50});//25
     pros::delay(100);
-    // chassis.moveToPoint(11, -12, 2000, {.forwards = false, .minSpeed = 75});
-    chassis.moveToPose(11, -12, -5, 1000, {.forwards = false, .lead = .3, .minSpeed = 75});
-    //change values to make it better
+    chassis.turnToHeading(3.5, 2000);//3-4
+    leftDescore.set_value(LOW);
 }
-
 /**
  * Runs the operator control code. This function will be started in its own task
  * with the default priority and stack size whenever the robot is enabled via
@@ -540,6 +534,28 @@ void opcontrol() {
   // tuningLateralPD();
     // chassis.setPose(-61.3, 16.8, 90);
     // SAWP();
+
+    // for(int i = 0; i < 3; i++) {
+    //     conveyorMotor.move(-127);
+    //     pros::delay(100);
+    //     conveyorMotor.move(0);
+    //     pros::delay(3000);
+    //     descoreMacro();
+    //     pros::delay(2000);
+    //     chassis.moveToPose(0, 0, 0, 2000, {.forwards = false});
+    //     pros::delay(2000);
+    // }
+
+    // pros::delay(3000);
+    // chassis.turnToPoint(5, 0, 2000);
+    // pros::delay(1000);
+    // chassis.turnToPoint(0, -5, 2000);
+    // pros::delay(1000);
+    // chassis.turnToPoint(-5, 0, 2000);
+    // pros::delay(1000);
+    // chassis.turnToPoint(0, 5, 2000);
+    // pros::delay(1000);
+
 	while (true) {
         // get joystick positions
         int leftY = controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
