@@ -67,15 +67,15 @@ lemlib::OdomSensors sensors(
     &imu     // inertial sensor
 );
 // lateral PID controller
-lemlib::ControllerSettings lateral_controller(5, // proportional gain (kP)
+lemlib::ControllerSettings lateral_controller(6, // proportional gain (kP)
                                               0.12, // integral gain (kI)-.006 over .41
-                                              21, // derivative gain (kD)
-                                              6, // anti windup 1.8
+                                              10, // derivative gain (kD) 
+                                              1.8, // anti windup 1.8
                                               1, // small error range, in inches  1
                                               100, // small error range timeout, in milliseconds 100
-                                            3, // large error range, in inches  3
+                                              3, // large error range, in inches  3
                                               500, // large error range timeout, in milliseconds 500
-                                              20 // maximum acceleration (slew)30
+                                              20 // maximum acceleration (slew)20
 );
 
 // angular PID controller
@@ -202,8 +202,10 @@ void competition_initialize() {//0 is left 1 is right 2 is  sawp 3 is skills, 4 
 void tuningLateralPD() {
         chassis.turnToPoint(0, 24, 2000);
         chassis.moveToPoint(0, 24, 2000);
+        pros::delay(2000);
         chassis.turnToPoint(0, 48, 2000);
         chassis.moveToPoint(0, 48, 2000);
+        pros::delay(2000);
         chassis.moveToPose(0, 0, 0, 2000, {.forwards = false});//.earlyExitRange = 0}
 }
 void tuningLateralI() {
@@ -401,16 +403,21 @@ void skills() {
     // chassis.moveTo(-47, 15, 5000); starting position
     chassis.turnToPoint(-47, 47, 5000);
     chassis.moveToPoint(-47, 47, 5000);//get in front of loader
+    // scraper.set_value(HIGH);
 
     chassis.turnToPoint(-56, 47, 5000);//get balls in loader
     chassis.moveToPoint(-56, 47, 5000);
+    // conveyorMotor.move(127);
+    pros::delay(2000);
 
     chassis.turnToPoint(-47, 47, 5000, {.forwards = false});//back up a bit
     chassis.moveToPoint(-47, 47, 5000, {.forwards = false});
+    // scraper.set_value(LOW);
+    // conveyorMotor.move(0);
 
     chassis.turnToPoint(-36, 59, 5000);//get in position to go across
     chassis.moveToPoint(-36, 59, 5000);
-
+    
     chassis.turnToPoint(36, 59, 5000);//get to other side
     chassis.moveToPoint(36, 59, 5000);
 
@@ -419,15 +426,26 @@ void skills() {
 
     chassis.turnToPoint(32, 47, 5000, {.forwards = false});//score first goal
     chassis.moveToPoint(32, 47, 5000, {.forwards = false});
+    // conveyorMotor.move(127);
+    // topMotor.move(127);
+    // scraper.set_value(HIGH);
+    pros::delay(2000);
 
     chassis.turnToPoint(56, 47, 5000);//get balls in loader
     chassis.moveToPoint(56, 47, 5000);
+    // topMotor.move(0);
+    pros::delay(2000);
 
     chassis.turnToPoint(32, 47, 5000, {.forwards = false});//score more
     chassis.moveToPoint(32, 47, 5000, {.forwards = false});
+    pros::delay(1000);
+    // topMotor.move(127);
+    pros::delay(2000);
 
     chassis.turnToPoint(40, 47, 5000);//get in position to go across
     chassis.moveToPoint(40, 47, 5000);
+    // conveyorMotor.move(0);
+    // topMotor.move(0);
 
     //------------------------------------------------------second half----------------------------------------------------//
     // chassis.turnToPoint(40, -47, 5000);//get to other side
@@ -435,9 +453,13 @@ void skills() {
 
     // chassis.turnToPoint(56, -47, 5000);//get loader
     // chassis.moveToPoint(56, -47, 5000);
+    // conveyorMotor.move(127);
+    // pros::delay(2000);
 
     // chassis.turnToPoint(40, -47, 5000, {.forwards = false});//get in position to go to other side
     // chassis.moveToPoint(40, -47, 5000, {.forwards = false});
+    // conveyorMotor.move(0);
+    // scraper.set_value(LOW);
 
     // chassis.turnToPoint(36, -59, 5000);//get ready to cross
     // chassis.moveToPoint(36, -59, 5000);
@@ -450,18 +472,30 @@ void skills() {
 
     // chassis.turnToPoint(-32, -47, 5000, {.forwards = false});//score first goal
     // chassis.moveToPoint(-32, -47, 5000, {.forwards = false});
+    // conveyorMotor.move(127);
+    // topMotor.move(127);
+    // scraper.set_value(HIGH);
+    // pros::delay(2000);
 
     // chassis.turnToPoint(-56, -47, 5000);//get balls in loader
     // chassis.moveToPoint(-56, -47, 5000);
+    // topMotor.move(0);
+    // pros::delay(2000);
     
     // chassis.turnToPoint(-32, -47, 5000, {.forwards = false});//score more
     // chassis.moveToPoint(-32, -47, 5000, {.forwards = false});
+    // pros::delay(1000);
+    // topMotor.move(127);
+    // scraper.set_value(LOW);
+    // pros::delay(2000);
 
     // chassis.turnToPoint(-58, -23, 5000);//get readdy to park
     // chassis.moveToPoint(-58, -23, 5000);//get readdy to park
 
-
+    // chassis.turnToPoint(-62.5, 0, 5000);//get readdy to park
     // chassis.moveToPoint(-62.5, 0, 5000);//parrkkkkkk
+    // pros::delay(500);
+    // scraper.set_value(HIGH);
 
 }
 
@@ -489,9 +523,11 @@ void descoreMacro(){
  */
 
 void opcontrol() {
-  // chassis.setPose(-61.3, 16.8, 90);
-  // leftSimpleAWP();
-  // tuningLateralPD();
+    // chassis.setPose(-61.3, 16.8, 90);
+    // leftSimpleAWP();
+
+    tuningLateralI();
+
     // chassis.setPose(-61.3, 16.8, 90);
     // SAWP();
 
@@ -506,9 +542,9 @@ void opcontrol() {
     //     pros::delay(2000);
     // }
 
-    pros::delay(3000);
-    skills();
-    pros::delay(1000);
+    // pros::delay(3000);
+    // skills();
+    // pros::delay(1000);
 
 	while (true) {
         // get joystick positions
