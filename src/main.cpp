@@ -248,8 +248,7 @@ void leftSimpleAWP() {
     chassis.moveToPoint(-5, 46, 2800, {.maxSpeed = 50});//-5, 46 for one {.maxSpeed = 50, .earlyExitRange = 5}
     pros::delay(500);
     scraper.set_value(LOW);
-    chassis.swingToHeading(50, lemlib::DriveSide::RIGHT, 2000);
-    chassis.moveToPose(-8, 14, 315, 5000, {.forwards = false, .lead = .3});
+    chassis.moveToPose(-7, 14, 315, 5000, {.forwards = false, .lead = .3});
     pros::delay(900);
     topMotor.move(50);
     pros::delay(1000);
@@ -273,7 +272,7 @@ void leftSimpleAWP() {
 	conveyorMotor.move(0);
     topMotor.move(0);
     descoreMacro();
-    chassis.moveToPoint(5, -10, 2000, {.forwards = false});
+    chassis.moveToPoint(10, -10, 2000, {.forwards = false});
     pros::delay(500);
 
     //testing code
@@ -291,26 +290,26 @@ chassis.moveToPose(
     conveyorMotor.move(127);
     pros::delay(800);
     scraper.set_value(HIGH);
-    chassis.moveToPoint(-5, -43, 3000,  {.maxSpeed=50});//-5, 46 for one
-    chassis.swingToHeading(130, lemlib::DriveSide::LEFT, 2000);
-    pros::delay(500);
+    chassis.moveToPoint(-4, -43, 3000,  {.maxSpeed=50});//-5, 46 for one
+    pros::delay(200);
     scraper.set_value(LOW);
-    chassis.moveToPoint(-22, -24, 2000, {.forwards = false});
+    chassis.moveToPoint(-17, -22, 2000, {.forwards = false});
+    pros::delay(7000);
+    chassis.turnToPoint(-5, -11, 2000);
+    pros::delay(7000);
 
-    // pros::delay(7000);
-    chassis.turnToPoint(-6, -10, 2000);
-    chassis.moveToPoint(-6, -10, 2000);
+    chassis.moveToPoint(-5, -11, 2000);
     // chassis.moveToPose(-8, -14, 315, 5000, {.forwards = false, .lead = .3});
 
 
     pros::delay(500);
     topMotor.move(-50);
     conveyorMotor.move(-127);
-    chassis.turnToPoint(-45, -51, 3000, {.forwards = false});//////
-    pros::delay(500);
+    chassis.turnToPoint(-45, -50, 3000, {.forwards = false});//////
+    pros::delay(200);
     conveyorMotor.move(0);
     topMotor.move(0);
-    chassis.moveToPoint(-45, -51, 5000, {.forwards = false});/////
+    chassis.moveToPoint(-45, -50, 5000, {.forwards = false});/////
     scraper.set_value(HIGH);
     chassis.turnToHeading(270, 1000, {}, false);
     chassis.setPose(-47, -47, 270);
@@ -338,7 +337,7 @@ void SAWP() { // place only on right side
     chassis.turnToPoint(-60, -47, 200);
     chassis.moveToPoint(-60, -47, 500, {.minSpeed = 40});
     conveyorMotor.move(127);
-    pros::delay(500);
+    pros::delay(250);
 
     //Scoring in first goal
     chassis.turnToPoint(-27, -48, 1000, {.forwards = false}); // not needed if straight
@@ -351,7 +350,7 @@ void SAWP() { // place only on right side
 
     //First 3 balls
     chassis.moveToPoint(-27, -26, 5000, {.minSpeed=40, .earlyExitRange=1});
-    pros::delay(1000);
+    pros::delay(800);
     scraper.set_value(HIGH);
     pros::delay(500);
     chassis.turnToPoint(-24, 26, 2000, {}, false);
@@ -359,32 +358,33 @@ void SAWP() { // place only on right side
 
     // Second 3 balls
 
-    chassis.moveToPoint(-24, 29, 2000, {});
-    pros::delay(1500);
+    chassis.moveToPoint(-24, 24, 2000, {});
+    pros::delay(800);
     scraper.set_value(HIGH);
- 
-    //// Middle scoring part
-    chassis.turnToPoint(-12,17, 1000, {.forwards = false});
-    chassis.moveToPoint(-12, 17, 5000,  {.forwards = false});
+    
 
-    return;
+    //// Middle scoring par
+    chassis.turnToPoint(-14,14, 1000, {.forwards = false});
+    chassis.moveToPoint(-14, 14, 5000,  {.forwards = false});
+
 
     pros::delay(100);
     topMotor.move(50);
     pros::delay(1000);
     // chassis.turnToPoint(-47, 47, 2000);
-    chassis.moveToPoint(-47, 56, 5000);
+    chassis.moveToPoint(-47, 53, 5000);
     topMotor.move(0);
-
+    // pros::delay(7000);
+    // return;
     // // Second loader
     // // scraper.set_value(HIGH);
-    chassis.turnToPoint(-60, 56, 2000);
-    chassis.moveToPoint(-60, 56, 3000, {.minSpeed=40});
+    chassis.turnToPoint(-60, 53, 2000);
+    chassis.moveToPoint(-60, 53, 3000, {.minSpeed=40});
     pros::delay(1000);
 
     // Second goal scoring
-    chassis.turnToPoint(-30, 56, 2000, {.forwards = false});
-    chassis.moveToPoint(-30, 56, 5000, {.forwards = false, .minSpeed=40});
+    chassis.turnToPoint(-30, 53, 2000, {.forwards = false});
+    chassis.moveToPoint(-30, 53, 5000, {.forwards = false, .minSpeed=40});
     pros::delay(500);
     topMotor.move(127);
     pros::delay(2000);
