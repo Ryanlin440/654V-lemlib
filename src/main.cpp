@@ -172,8 +172,8 @@ void initialize() {
       }
     });
 
-    // autonSelector();//remove this aswell
-    // autonomous();//⚠️ Remove this before competitions.
+    autonSelector();//remove this aswell
+    autonomous();//⚠️ Remove this before competitions.
 }
 
 /**
@@ -366,6 +366,9 @@ void SAWP() { // place only on right side
     //// Middle scoring part
     chassis.turnToPoint(-12,17, 1000, {.forwards = false});
     chassis.moveToPoint(-12, 17, 5000,  {.forwards = false});
+
+    return;
+
     pros::delay(100);
     topMotor.move(50);
     pros::delay(1000);
@@ -518,9 +521,9 @@ void opcontrol() {
     // conveyorMotor.move(127);
     // pros::delay(100000);
     // chassis.setPose(-61.3, -16.8, 90);
-                chassis.setPose(-47, 15, 0);
-    pros::delay(1000);
-    skills();
+    //             chassis.setPose(-47, 15, 0);
+    // pros::delay(1000);
+    // skills();
 
 
 
