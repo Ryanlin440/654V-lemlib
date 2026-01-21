@@ -498,7 +498,7 @@ void descoreMacro(){
     chassis.setPose(0,0,0);
     chassis.moveToPose(12.3, 14, 3, 1000, {.lead = .01, .minSpeed = 50});//25
     pros::delay(100);
-    chassis.turnToHeading(3.5, 2000);//3-4
+    chassis.turnToHeading(3, 500);//3-4
     leftDescore.set_value(LOW);
 }
 /**
