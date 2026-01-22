@@ -113,10 +113,10 @@ lemlib::Chassis chassis(drivetrain,         // drivetrain settings
 
 int selectedAuton = 0;
 bool autonSelected = false;
-const char* autonNames[] = {"Middle Control", "All Long Goal", "Four Ball Rush", "Right Side", "SAWP", "Skills", "User"};
+const char* autonNames[] = {"User", "Skills", "SAWP", "Left: Middle Control", "Left: All Long Goal", "Left: Four Ball Rush", "Right: Middle Control", "Right: All Long Goal", "Right: Four Ball Rush"};
+
 void autonSelector() {
     controller.clear();
-
     while (!autonSelected) {
         controller.print(2, 0, "Auton: %-8s", autonNames[selectedAuton]);
 
@@ -127,7 +127,7 @@ void autonSelector() {
 
         if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_RIGHT)) {
             selectedAuton++;
-            if (selectedAuton > 6) selectedAuton = 6;
+            if (selectedAuton > 8) selectedAuton = 8;
         }
 
         if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_X)) {
@@ -136,10 +136,8 @@ void autonSelector() {
 
         pros::delay(20);
     }
-
-    
-    // controller.print(2, 0, "%-10s",  );
 }
+
 
 /**
  * Runs initialization code. This occurs as soon as the program is started.
@@ -191,8 +189,6 @@ void disabled() {}
  * starts.
  */
 
-
-
 void competition_initialize() {
     // 0 is middle control
     // 1 is all long goal
@@ -240,8 +236,6 @@ void tuningAngularI() {
         pros::delay(5000);
         chassis.turnToHeading(0, 5000);
 }
-
-
 
 
 void leftMiddleControl() {
@@ -336,8 +330,8 @@ void leftFourBallRush() {
     
     // Going in front of long goal
     // chassis.moveToPose(-27, 47, 0, 3000, {.forwards = false, .lead = .01}); Smoother if works
-    chassis.turnToPoint(-40, 48, 3000, {.forwards = false}); // prob need to change
-    chassis.moveToPoint(-40, 48, 3000, {.forwards = false}); // prob need to change
+    chassis.turnToPoint(-40, 48, 3000, {.forwards = false}); 
+    chassis.moveToPoint(-40, 48, 3000, {.forwards = false});
     chassis.turnToHeading(270, 1000, {}, false);
     chassis.setPose(-47, 47, 270);
     scraper.set_value(LOW);
@@ -349,50 +343,110 @@ void leftFourBallRush() {
     pros::delay(1500);
     descoreMacro(true);
 }
-void rightSimpleAWP() {
-chassis.moveToPose(
-      -22.22, -22.22, 150, 2000,
-      {.lead = .3, .minSpeed = 50}); //{.horizontalDrift = 8, .lead = 0.3}
+
+void rightMiddleControl() {
+        // template based on rightSimpleAWP
+        chassis.moveToPose(
+            -22.22, -22.22, 150, 2000,
+            {.lead = .3, .minSpeed = 50});
+        conveyorMotor.move(127);
+        pros::delay(800);
+        scraper.set_value(HIGH);
+        chassis.moveToPoint(-4, -43, 3000,  {.maxSpeed=50});
+        pros::delay(200);
+        scraper.set_value(LOW);
+        chassis.moveToPoint(-17, -22, 2000, {.forwards = false});
+        pros::delay(7000);
+        chassis.turnToPoint(-5, -11, 2000);
+        pros::delay(7000);
+
+        chassis.moveToPoint(-5, -11, 2000);
+        pros::delay(500);
+        topMotor.move(-50);
+        conveyorMotor.move(-127);
+        chassis.turnToPoint(-45, -50, 3000, {.forwards = false});
+        pros::delay(200);
+        conveyorMotor.move(0);
+        topMotor.move(0);
+        chassis.moveToPoint(-45, -50, 5000, {.forwards = false});
+        scraper.set_value(HIGH);
+        chassis.turnToHeading(270, 1000, {}, false);
+        chassis.setPose(-47, -47, 270);
+        conveyorMotor.move(127);
+        chassis.moveToPoint(-25, -47, 2000, {.forwards = false});
+        pros::delay(800);
+        topMotor.move(127);
+        pros::delay(2000);
+        topMotor.move(0);
+        chassis.moveToPoint(-60, -47, 1000, {.minSpeed = 50}, false);
+        pros::delay(1000);
+        chassis.turnToPoint(-25, -47, 2000, {.forwards = false});
+        chassis.moveToPoint(-25, -47, 2000, {.forwards = false});
+        pros::delay(800);
+        topMotor.move(127);
+        pros::delay(2000);
+}
+void rightAllLongGoal() {
+    // Three balls + 1 under goal (mirrored from leftAllLongGoal)
+    chassis.moveToPose(-22.22, -22.22, 150, 2000, {.lead = .3, .minSpeed = 50});
     conveyorMotor.move(127);
     pros::delay(800);
     scraper.set_value(HIGH);
-    chassis.moveToPoint(-4, -43, 3000,  {.maxSpeed=50});//-5, 46 for one
-    pros::delay(200);
-    scraper.set_value(LOW);
-    chassis.moveToPoint(-17, -22, 2000, {.forwards = false});
-    pros::delay(7000);
-    chassis.turnToPoint(-5, -11, 2000);
-    pros::delay(7000);
-
-    chassis.moveToPoint(-5, -11, 2000);
-    // chassis.moveToPose(-8, -14, 315, 5000, {.forwards = false, .lead = .3});
-
-
+    chassis.moveToPoint(-5, -46, 2800, {.maxSpeed = 50});
     pros::delay(500);
-    topMotor.move(-50);
-    conveyorMotor.move(-127);
-    chassis.turnToPoint(-45, -50, 3000, {.forwards = false});//////
-    pros::delay(200);
+    scraper.set_value(LOW);
+
+    // Going to position to go in front of loader
+    chassis.moveToPose(-22.22, -22.22, 225, 5000, {.forwards = false, .lead = .3});
     conveyorMotor.move(0);
-    topMotor.move(0);
-    chassis.moveToPoint(-45, -50, 5000, {.forwards = false});/////
-    scraper.set_value(HIGH);
+    
+    // Getting in front of loader
+    chassis.turnToPoint(-45, -51, 3000);
+    chassis.moveToPoint(-45, -51, 5000);
     chassis.turnToHeading(270, 1000, {}, false);
     chassis.setPose(-47, -47, 270);
-    conveyorMotor.move(127);
-    chassis.moveToPoint(-25, -47, 2000, {.forwards = false});
-    pros::delay(800);
+
+    // Going into loader
+    scraper.set_value(HIGH);
+    chassis.moveToPoint(-55, -47, 1000, {.minSpeed = 60});
+	conveyorMotor.move(127);
+    pros::delay(1500);
+
+    // Scoring in long goal
+    chassis.turnToHeading(270, 1000);
+    chassis.moveToPoint(-27, -47, 2000, {.forwards = false});
+    pros::delay(700);
     topMotor.move(127);
-    pros::delay(2000);
+    scraper.set_value(LOW);
+    left_motor_group.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
+    right_motor_group.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
+
+    // Get rid of during competition
+    pros::delay(5000); 
+    conveyorMotor.move(0);
     topMotor.move(0);
-    chassis.moveToPoint(-60, -47, 1000, {.minSpeed = 50}, false);
-    pros::delay(1000);
-    chassis.turnToPoint(-25, -47, 2000, {.forwards = false});
-    chassis.moveToPoint(-25, -47, 2000, {.forwards = false});
+}
+void rightFourBallRush() {
+    // Three balls (mirrored from leftFourBallRush)
+    chassis.moveToPose(-22.22, -22.22, 150, 2000, {.lead = .3, .minSpeed = 50});
+    conveyorMotor.move(127);
     pros::delay(800);
+    scraper.set_value(HIGH);
+    pros::delay(200);
+    
+    // Going in front of long goal
+    chassis.turnToPoint(-40, -48, 3000, {.forwards = false}); 
+    chassis.moveToPoint(-40, -48, 3000, {.forwards = false});
+    chassis.turnToHeading(270, 1000, {}, false);
+    chassis.setPose(-47, -47, 270);
+    scraper.set_value(LOW);
+    
+    // Scoring in long goal
+    chassis.moveToPoint(-26, -47, 2000, {.forwards = false});
+    pros::delay(300);
     topMotor.move(127);
-    pros::delay(2000);
-  
+    pros::delay(1500);
+    descoreMacro(false);
 }
 void SAWP() { // place only on right side
     //First loader
@@ -567,7 +621,8 @@ void descoreMacro(bool forward) {
 
     chassis.setPose(0,0,0);
     chassis.moveToPose(12.3, 14, 3, 1000, {.lead = .01, .minSpeed = 50});
-    chassis.turnToHeading(2.5, 2000);
+    chassis.turnToHeading(2.5, 2000); // Maybe change to 0 if angle allows
+    //once pid tuned, make timeout smaller
     if(forward){
         chassis.moveToPoint(10, -18, 2000, {.forwards = false, .minSpeed=30});
         pros::delay(3000);
@@ -683,34 +738,42 @@ void opcontrol() {
 //width 14.6 height 17.5
 void autonomous() {
 	switch (selectedAuton) {
-        case 0: // Middle Control Auto
-          	chassis.setPose(-61.3, 16.8, 90);
-			leftMiddleControl();
-			break;
-        case 1: // All Long Goal
-            chassis.setPose(-61.3, 16.8, 90);
-			leftAllLongGoal();
-			break;
-        case 2: // Four Ball Rush
-            chassis.setPose(-61.3, 16.8, 90);
-			leftFourBallRush();
-			break;
-        case 3: // Right Side
-            chassis.setPose(-61.3, -16.8, 90);
-			rightSimpleAWP();
-			break;
-        case 4: // SAWP
-            chassis.setPose(-61.3, -16.8, 90);
-			SAWP();
-			break;
-        case 5: // Skills
-            chassis.setPose(-47, 15, 0);
-			skills();
-			break;
-        case 6: // User testing or opcontrol
+        case 0: // User (manual/opcontrol)
             opcontrol();
             break;
-		default:
-			break;
-	}      
+        case 1: // Skills
+            chassis.setPose(-47, 15, 0);
+            skills();
+            break;
+        case 2: // SAWP
+            chassis.setPose(-61.3, -16.8, 90);
+            SAWP();
+            break;
+        case 3: // Left: Middle Control
+            chassis.setPose(-61.3, 16.8, 90);
+            leftMiddleControl();
+            break;
+        case 4: // Left: All Long Goal
+            chassis.setPose(-61.3, 16.8, 90);
+            leftAllLongGoal();
+            break;
+        case 5: // Left: Four Ball Rush
+            chassis.setPose(-61.3, 16.8, 90);
+            leftFourBallRush();
+            break;
+        case 6: // Right: Middle Control
+            chassis.setPose(-61.3, -16.8, 90);
+            rightMiddleControl();
+            break;
+        case 7: // Right: All Long Goal
+            chassis.setPose(-61.3, -16.8, 90);
+            rightAllLongGoal();
+            break;
+        case 8: // Right: Four Ball Rush
+            chassis.setPose(-61.3, -16.8, 90);
+            rightFourBallRush();
+            break;
+        default:
+            break;
+    }
 }
