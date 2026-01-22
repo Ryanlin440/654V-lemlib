@@ -332,20 +332,21 @@ void leftFourBallRush() {
     conveyorMotor.move(127);
     pros::delay(800);
     scraper.set_value(HIGH);
+    pros::delay(200);
     
     // Going in front of long goal
     // chassis.moveToPose(-27, 47, 0, 3000, {.forwards = false, .lead = .01}); Smoother if works
     chassis.turnToPoint(-40, 48, 3000, {.forwards = false}); // prob need to change
     chassis.moveToPoint(-40, 48, 3000, {.forwards = false}); // prob need to change
     chassis.turnToHeading(270, 1000, {}, false);
-    chassis.setPose(-40, 48, 270);
+    chassis.setPose(-47, 47, 270);
     scraper.set_value(LOW);
-
+    
     //Scoring in long goal
-    chassis.moveToPoint(-25, 47, 2000, {.forwards = false});
+    chassis.moveToPoint(-26, 47, 2000, {.forwards = false});
     pros::delay(300);
     topMotor.move(127);
-    pros::delay(2000);
+    pros::delay(1500);
     descoreMacro(true);
 }
 void rightSimpleAWP() {
@@ -566,13 +567,13 @@ void descoreMacro(bool forward) {
 
     chassis.setPose(0,0,0);
     chassis.moveToPose(12.3, 14, 3, 1000, {.lead = .01, .minSpeed = 50});
-    // pros::delay(100);
-    chassis.turnToHeading(3, 2000);
+    chassis.turnToHeading(2.5, 2000);
     if(forward){
-        chassis.moveToPoint(10, -10, 2000, {.forwards = false, .minSpeed=30});
+        chassis.moveToPoint(10, -18, 2000, {.forwards = false, .minSpeed=30});
         pros::delay(3000);
         left_motor_group.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
         right_motor_group.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
+        pros::delay(5000);
     }
 }
 /**
