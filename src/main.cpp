@@ -335,14 +335,14 @@ void leftFourBallRush() {
     
     // Going in front of long goal
     // chassis.moveToPose(-27, 47, 0, 3000, {.forwards = false, .lead = .01}); Smoother if works
-    chassis.turnToPoint(-45, 51, 3000, {.forwards = false}); // prob need to change
-    chassis.moveToPoint(-45, 51, 3000, {.forwards = false}); // prob need to change
+    chassis.turnToPoint(-40, 48, 3000, {.forwards = false}); // prob need to change
+    chassis.moveToPoint(-40, 48, 3000, {.forwards = false}); // prob need to change
     chassis.turnToHeading(270, 1000, {}, false);
-    chassis.setPose(-47, 47, 270);
+    chassis.setPose(-40, 48, 270);
     scraper.set_value(LOW);
 
     //Scoring in long goal
-    chassis.moveToPoint(-27, 47, 2000, {.forwards = false});
+    chassis.moveToPoint(-25, 47, 2000, {.forwards = false});
     pros::delay(300);
     topMotor.move(127);
     pros::delay(2000);
@@ -392,7 +392,7 @@ chassis.moveToPose(
     topMotor.move(127);
     pros::delay(2000);
   
-}//mirror y values
+}
 void SAWP() { // place only on right side
     //First loader
     chassis.moveToPoint(-45, -40, 2000, {.minSpeed = 60, .earlyExitRange = 5}); //Position first 
@@ -570,6 +570,7 @@ void descoreMacro(bool forward) {
     chassis.turnToHeading(3, 2000);
     if(forward){
         chassis.moveToPoint(10, -10, 2000, {.forwards = false, .minSpeed=30});
+        pros::delay(3000);
         left_motor_group.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
         right_motor_group.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
     }
