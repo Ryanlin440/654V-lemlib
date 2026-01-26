@@ -328,9 +328,9 @@ void leftAllLongGoal() {
 void leftFourBallRush() {
     // Three balls 
     chassis.moveToPose(-26.22, 22.22, 30, 2000, {.lead = .29, .minSpeed = 50});
-    conveyorMotor.move(127);
+    // conveyorMotor.move(127);
     pros::delay(700);
-    scraper.set_value(HIGH);
+    // scraper.set_value(HIGH);
     pros::delay(600);
     
     // Going in front of long goal
@@ -338,12 +338,12 @@ void leftFourBallRush() {
     chassis.moveToPoint(-35, 42.5, 3000, {.forwards = false, .minSpeed = 50});
     chassis.turnToHeading(270, 1000, {}, false);
     chassis.setPose(-42, 47, 270);
-    scraper.set_value(LOW);
+    // scraper.set_value(LOW);
 
     // Scoring in long goal
     chassis.moveToPoint(-24, 47, 1000, {.forwards = false});
-    pros::delay(400);
-    topMotor.move(127);
+    pros::delay(500);
+    // topMotor.move(127);
     pros::delay(1000);
     descoreMacro(true);
 }
@@ -451,7 +451,7 @@ void rightFourBallRush() {
     
     // Scoring in long goal
     chassis.moveToPoint(-24, -47, 1000, {.forwards = false});
-    pros::delay(400);
+    pros::delay(500);
     topMotor.move(127);
     pros::delay(1000);
     descoreMacro(true);
@@ -517,52 +517,60 @@ void skills() {
     chassis.setPose(-47, 14, 0);
 
     // chassis.moveTo(-47, 15, 5000); starting position
-    chassis.turnToPoint(-47, 50, 5000);
-    chassis.moveToPoint(-47, 50, 5000);//get in front of loader
-    scraper.set_value(HIGH);
-
-    chassis.turnToPoint(-60, 50, 5000);//get balls in loader
-    chassis.moveToPoint(-60, 50, 1000);
-    conveyorMotor.move(127);
-    pros::delay(2000);
-
-    chassis.turnToPoint(-47, 50, 5000, {.forwards = false});//back up a bit
-    chassis.moveToPoint(-47, 50, 5000, {.forwards = false});
-    scraper.set_value(LOW);
-    conveyorMotor.move(0);
-
-    chassis.turnToPoint(-36, 66, 5000);//get in position to go across
-    chassis.moveToPoint(-36, 66, 5000);
+    chassis.turnToPoint(-47, 48, 5000);
+    chassis.moveToPoint(-47, 48, 5000); //get in front of loader
+    // scraper.set_value(HIGH);
     
-    chassis.turnToPoint(36, 67, 5000);//get to other side
-    chassis.moveToPoint(36, 67, 5000);
-
-    chassis.turnToPoint(47, 54, 5000);//get in front of goal
-    chassis.moveToPoint(47, 54, 5000);
-
-    chassis.turnToPoint(33, 54, 5000, {.forwards = false});//score first goal
-    chassis.moveToPoint(33, 54, 5000, {.forwards = false});
-    conveyorMotor.move(127);
-    pros::delay(500);
-    topMotor.move(127);
-    scraper.set_value(HIGH);
+    chassis.turnToHeading(270, 1000); //get balls in loader
+    chassis.moveToPoint(-58, 49, 1000);
+    // conveyorMotor.move(127);
     pros::delay(2000);
 
-    chassis.turnToPoint(64, 54, 5000);//get balls in loader
-    chassis.moveToPoint(64, 54, 5000);
+    chassis.turnToPoint(-47, 49, 5000, {.forwards = false});//back up a bit
+    chassis.moveToPoint(-47, 49, 5000, {.forwards = false});
+    // scraper.set_value(LOW);
+    // conveyorMotor.move(0);
+
+    chassis.turnToPoint(-36, 63, 1000);//get in position to go across
+    chassis.moveToPoint(-36, 63, 1000, {}, true);
+    
+    
+    chassis.turnToHeading(90, 1000); //go across
+    chassis.moveToPoint(36, 66, 5000, {.maxSpeed = 60});
+
+    chassis.turnToHeading(135, 1000);//get in front of goal
+    chassis.moveToPoint(47, 50, 5000); // decrease y?
+
+    chassis.turnToHeading(90, 1000); //score first goal
+    chassis.moveToPoint(34, 50, 5000, {.forwards = false});
+    // conveyorMotor.move(127);
+    pros::delay(500);
+    // topMotor.move(127);
+    // scraper.set_value(HIGH);
+    pros::delay(2000);
+
+    
+    chassis.setPose(34, 50, 90);// getting balls in loader
+    chassis.turnToPoint(65, 52, 5000);
+    chassis.moveToPoint(65, 52, 5000);
     // topMotor.move(0);
     pros::delay(2000);
 
-    chassis.turnToPoint(33, 54, 5000, {.forwards = false});//score more
-    chassis.moveToPoint(33, 54, 5000, {.forwards = false});
+    chassis.turnToPoint(34, 50, 5000, {.forwards = false});//score more
+    chassis.moveToPoint(34, 50, 5000, {.forwards = false});
     pros::delay(1000);
-    topMotor.move(127);
+    // topMotor.move(127);
     pros::delay(2000);
 
-    // chassis.turnToPoint(40, 47, 5000);//get in position to go across
-    // chassis.moveToPoint(40, 47, 5000);
+    // 50, 51
+    chassis.turnToPoint(43, 50, 5000);//get in position to go across
+    chassis.moveToPoint(43, 50, 5000);
     // conveyorMotor.move(0);
     // topMotor.move(0);
+    chassis.turnToHeading(180, 1000);
+
+    pros::delay(500);
+    return;
 
     //------------------------------------------------------second half----------------------------------------------------//
     // chassis.turnToPoint(40, -47, 5000);//get to other side
@@ -633,7 +641,7 @@ void descoreMacro(bool forward) {
         chassis.setBrakeMode(pros::E_MOTOR_BRAKE_HOLD);
         right_motor_group.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
         left_motor_group.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
-        pros::delay(500);
+        pros::delay(500); // try with control switch, pretty sure just get rid off during comp.
     }
 }
 /**
