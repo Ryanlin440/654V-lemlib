@@ -327,21 +327,21 @@ void leftAllLongGoal() {
 }
 void leftFourBallRush() {
     // Three balls 
-    chassis.moveToPose(-22.22, 22.22, 30, 2000, {.lead = .3, .minSpeed = 50});
+    chassis.moveToPose(-26.22, 22.22, 30, 2000, {.lead = .29, .minSpeed = 50});
     conveyorMotor.move(127);
-    pros::delay(800);
-    // scraper.set_value(HIGH);
-    pros::delay(500);
+    pros::delay(700);
+    scraper.set_value(HIGH);
+    pros::delay(600);
     
     // Going in front of long goal
-    chassis.turnToPoint(-40, 44, 3000, {.forwards = false}); 
-    chassis.moveToPoint(-40, 44, 3000, {.forwards = false, .minSpeed = 50});
+    chassis.turnToPoint(-35, 42.5, 500, {.forwards = false}); 
+    chassis.moveToPoint(-35, 42.5, 3000, {.forwards = false, .minSpeed = 50});
     chassis.turnToHeading(270, 1000, {}, false);
-    chassis.setPose(-47, 47, 270);
-    // scraper.set_value(LOW);
+    chassis.setPose(-42, 47, 270);
+    scraper.set_value(LOW);
 
     // Scoring in long goal
-    chassis.moveToPoint(-25, 47, 2000, {.forwards = false});
+    chassis.moveToPoint(-24, 47, 1000, {.forwards = false});
     pros::delay(400);
     topMotor.move(127);
     pros::delay(1000);
@@ -436,21 +436,21 @@ void rightAllLongGoal() {
 }
 void rightFourBallRush() {
     // Three balls
-    chassis.moveToPose(-22.22, -22.22, 150, 2000, {.lead = .3, .minSpeed = 50});
+    chassis.moveToPose(-26.22, -22.22, 150, 2000, {.lead = .29, .minSpeed = 50});
     conveyorMotor.move(127);
-    pros::delay(800);
+    pros::delay(700);
     scraper.set_value(HIGH);
-    pros::delay(500);
+    pros::delay(600);
     
     // Going in front of long goal
-    chassis.turnToPoint(-40, -44, 3000, {.forwards = false}); 
-    chassis.moveToPoint(-40, -44, 3000, {.forwards = false, .minSpeed = 50});
+    chassis.turnToPoint(-35, -42.5, 500, {.forwards = false}); 
+    chassis.moveToPoint(-35, -42.5, 3000, {.forwards = false, .minSpeed = 50});
     chassis.turnToHeading(270, 1000, {}, false);
-    chassis.setPose(-47, -47, 270);
+    chassis.setPose(-42, -47, 270);
     scraper.set_value(LOW);
     
     // Scoring in long goal
-    chassis.moveToPoint(-25, -47, 2000, {.forwards = false});
+    chassis.moveToPoint(-24, -47, 1000, {.forwards = false});
     pros::delay(400);
     topMotor.move(127);
     pros::delay(1000);
@@ -625,10 +625,11 @@ void descoreMacro(bool forward) {
 
     chassis.setPose(0,0,0);
     chassis.moveToPose(13, 14, 3, 1500, {.lead = .01, .minSpeed = 50});
-    chassis.turnToHeading(1, 500);
+    chassis.turnToHeading(1, 500, {}, true);
     if(forward){
-        chassis.moveToPoint(11, -18, 2000, {.forwards = false, .minSpeed=30});
-        pros::delay(3000);
+        chassis.moveToPoint(12, -18, 2000, {.forwards = false, .maxSpeed = 70, .minSpeed=30});
+        chassis.turnToHeading(-5, 500);
+        pros::delay(300);
         chassis.setBrakeMode(pros::E_MOTOR_BRAKE_HOLD);
         right_motor_group.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
         left_motor_group.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
@@ -650,7 +651,9 @@ void descoreMacro(bool forward) {
  */
 
 void opcontrol() {
-    
+    chassis.setBrakeMode(pros::E_MOTOR_BRAKE_COAST);
+    right_motor_group.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
+    left_motor_group.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
 	while (true) {
         // get joystick positions
         int leftY = controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
