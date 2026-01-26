@@ -581,14 +581,14 @@ void skills() {
         return;
     }
     
+    chassis.setPose(-32, -47, 0); // reset to right side long goal
+    chassis.turnToPoint(-58, -23, 5000);//get readdy to park
+    chassis.moveToPoint(-58, -23, 5000);//get readdy to park
 
-    // chassis.turnToPoint(-58, -23, 5000);//get readdy to park
-    // chassis.moveToPoint(-58, -23, 5000);//get readdy to park
-
-    // chassis.turnToPoint(-62.5, 0, 5000);//get readdy to park
-    // chassis.moveToPoint(-62.5, 0, 5000);//parrkkkkkk
-    // pros::delay(500);
-    // scraper.set_value(HIGH);
+    chassis.turnToPoint(-62.5, 0, 5000);//get readdy to park
+    chassis.moveToPoint(-62.5, 0, 5000);//parrkkkkkk
+    pros::delay(500);
+    scraper.set_value(HIGH);
 
 }
 
