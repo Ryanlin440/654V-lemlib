@@ -7,6 +7,8 @@
 #include "pros/misc.hpp"
 #include "pros/motors.h"
 #include "pros/rtos.h"
+#include "robodash/api.h"
+#include "robodash/views/selector.hpp"
 #include "pros/rtos.hpp"
 void descoreMacro(bool forward);
 /**
@@ -67,8 +69,8 @@ lemlib::OdomSensors sensors(
     &imu     // inertial sensor
 );
 // lateral PID controller
-lemlib::ControllerSettings lateral_controller(6, // proportional gain (kP)
-                                              0.12, // integral gain (kI)-.006 over .41
+lemlib::ControllerSettings lateral_controller(6.1, // proportional gain (kP)
+                                              0.2, // integral gain (kI)-.006 over .41
                                               10, // derivative gain (kD) 
                                               1.8, // anti windup 1.8
                                               1, // small error range, in inches  1
@@ -79,11 +81,11 @@ lemlib::ControllerSettings lateral_controller(6, // proportional gain (kP)
 );
 
 // angular PID controller
-lemlib::ControllerSettings angular_controller(2.5,   // proportional gain (kP)
-                       0.08,   // integral gain (kI) .03 too little
-                       25.0402,  // derivative gain (kD)//10.7 w/ ki  14.5
-                       25,   // anti windup  3.25184
-                        1,   // small error range, in degrees  1
+lemlib::ControllerSettings angular_controller(2.7,   // proportional gain (kP) 2.7
+                       0.08,   // integral gain (kI) .08
+                       17.2,  // derivative gain (kD)//10.7 w/ ki  17.2
+                       20,   // anti windup  25
+                       1,   // small error range, in degrees  1
                        100, // small error range timeout, in milliseconds  100
                        3,   // large error range, in degrees  3
                        500, // large error range timeout, in milliseconds  500
@@ -202,6 +204,7 @@ void competition_initialize() {
     //autonSelector();
 }
 void tuningLateralPD() {
+        
         chassis.turnToPoint(0, 24, 2000);
         chassis.moveToPoint(0, 24, 2000);
         pros::delay(2000);
@@ -224,9 +227,9 @@ void tuningLateralI() {
 }
 
 void tuningAngularPD() {
-        chassis.turnToHeading(90, 5000);
-        chassis.turnToHeading(180, 5000);
-        chassis.turnToHeading(0, 5000);
+        chassis.turnToHeading(90, 2000);
+        chassis.turnToHeading(180, 2000);
+        chassis.turnToHeading(0, 2000);
 
 }
 void tuningAngularI() {
@@ -244,7 +247,7 @@ void leftMiddleControl() {
     conveyorMotor.move(127);
     pros::delay(800);
     scraper.set_value(HIGH);
-    chassis.moveToPoint(-5, 46, 2800, {.maxSpeed = 50});
+    chassis.moveToPoint(-4, 46, 2800, {.maxSpeed = 50});
     pros::delay(500);
     scraper.set_value(LOW);
 
@@ -252,25 +255,25 @@ void leftMiddleControl() {
     chassis.moveToPose(-7, 14, 315, 5000, {.forwards = false, .lead = .3});
     pros::delay(900);
     topMotor.move(50);
-    pros::delay(1000); // make longer if want to score in middle more
-    conveyorMotor.move(0);
-    topMotor.move(0);
+    pros::delay(2000); // make longer if want to score in middle more
     
     // Going in front of loader
-    chassis.turnToPoint(-45, 51, 3000);
-    chassis.moveToPoint(-45, 51, 5000);
+    chassis.turnToPoint(-45, 50.25, 3000);
+    chassis.moveToPoint(-45, 50.25, 5000);
     scraper.set_value(HIGH);
+    conveyorMotor.move(0);
+    topMotor.move(0);
     chassis.turnToHeading(270, 1000, {}, false);
     chassis.setPose(-47, 47, 270);
 
     // Going into loader 
-    chassis.moveToPoint(-55, 47, 1000, {.minSpeed = 60});//put to -60 once done
+    chassis.moveToPoint(-49, 47, 1000, {.minSpeed = 40});
 	conveyorMotor.move(127);
     pros::delay(1000);
 
     // Scoring in long goal
     chassis.turnToHeading(270, 1000);
-    chassis.moveToPoint(-27, 47, 2000, {.forwards = false});
+    chassis.moveToPoint(-26, 47, 2000, {.forwards = false});
     pros::delay(700);
     topMotor.move(127);
     pros::delay(2000);
@@ -286,61 +289,62 @@ void leftAllLongGoal() {
     conveyorMotor.move(127);
     pros::delay(800);
     scraper.set_value(HIGH);
-    chassis.moveToPoint(-5, 46, 2800, {.maxSpeed = 50});
+    chassis.moveToPoint(-4, 46, 2800, {.maxSpeed = 50});
     pros::delay(500);
     scraper.set_value(LOW);
 
-    // Going to position to go in front of loader
-    chassis.moveToPose(-22.22, 22.22, 315, 5000, {.forwards = false, .lead = .3});
+    // Move back to position to go in front of loader
+    chassis.moveToPoint(-22.22, 22.22, 2000, {.forwards = false});
     conveyorMotor.move(0);
     
-    // Getting in front of loader
-    chassis.turnToPoint(-45, 51, 3000); // prob need to change
-    chassis.moveToPoint(-45, 51, 5000); // prob need to change
+    // Going in front of loader
+    chassis.turnToPoint(-45, 50.25, 3000, {.forwards = false});
+    chassis.moveToPoint(-45, 50.25, 5000, {.forwards = false});
+    scraper.set_value(HIGH);
     chassis.turnToHeading(270, 1000, {}, false);
     chassis.setPose(-47, 47, 270);
 
-    // Going into loader
-    scraper.set_value(HIGH);
-    chassis.moveToPoint(-55, 47, 1000, {.minSpeed = 60});//put to -60 once done
-	conveyorMotor.move(127);
-    pros::delay(1500); // time how much seconds
-
     // Scoring in long goal
-    chassis.turnToHeading(270, 1000);
-    chassis.moveToPoint(-27, 47, 2000, {.forwards = false});
+    chassis.moveToPoint(-26, 47, 2000, {.forwards = false});
+    pros::delay(400);
+    conveyorMotor.move(127);
+    topMotor.move(127);
+    pros::delay(1500);
+    topMotor.move(0);
+
+    // Going into loader 
+    chassis.moveToPoint(-49, 47, 1000, {.minSpeed = 40});
+    pros::delay(1500);
+
+    // Scoring in long goal again
+    chassis.moveToPoint(-26, 47, 2000, {.forwards = false});
     pros::delay(700);
     topMotor.move(127);
-    scraper.set_value(LOW);
-    left_motor_group.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
-    right_motor_group.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
-
-    // Get rid of during competition
-    pros::delay(5000); 
-    conveyorMotor.move(0);
-    topMotor.move(0);
+    chassis.setBrakeMode(pros::E_MOTOR_BRAKE_HOLD);
+    right_motor_group.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
+    left_motor_group.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
+    pros::delay(2000);
 }
 void leftFourBallRush() {
     // Three balls 
     chassis.moveToPose(-22.22, 22.22, 30, 2000, {.lead = .3, .minSpeed = 50});
     conveyorMotor.move(127);
     pros::delay(800);
-    scraper.set_value(HIGH);
-    pros::delay(200);
+    // scraper.set_value(HIGH);
+    pros::delay(500);
     
     // Going in front of long goal
-    // chassis.moveToPose(-27, 47, 0, 3000, {.forwards = false, .lead = .01}); Smoother if works
-    chassis.turnToPoint(-40, 48, 3000, {.forwards = false}); 
-    chassis.moveToPoint(-40, 48, 3000, {.forwards = false});
+    chassis.turnToPoint(-40, 44, 3000, {.forwards = false}); 
+    chassis.moveToPoint(-40, 44, 3000, {.forwards = false, .minSpeed = 50});
     chassis.turnToHeading(270, 1000, {}, false);
     chassis.setPose(-47, 47, 270);
-    scraper.set_value(LOW);
-    
-    //Scoring in long goal
-    chassis.moveToPoint(-26, 47, 2000, {.forwards = false});
-    pros::delay(300);
+    // scraper.set_value(LOW);
+
+    // Scoring in long goal
+    chassis.moveToPoint(-25, 47, 2000, {.forwards = false});
+    pros::delay(400);
     topMotor.move(127);
-    pros::delay(1500);
+    pros::delay(1000);
     descoreMacro(true);
 }
 
@@ -350,101 +354,106 @@ void rightMiddleControl() {
     conveyorMotor.move(127);
     pros::delay(800);
     scraper.set_value(HIGH);
-    chassis.moveToPoint(-5, -46, 2800, {.maxSpeed = 50});
+    chassis.moveToPoint(-4, -46, 2800, {.maxSpeed = 50});
     pros::delay(500);
     scraper.set_value(LOW);
 
     // Middle Scoring
-    chassis.moveToPose(-7, -14, 225, 5000, {.forwards = false, .lead = .3});
+    chassis.moveToPoint(-22.22, -22.22, 2000, {.forwards = false});
+    chassis.turnToPoint(-12, -14, 2000);
+    chassis.moveToPoint(-12, -14, 5000, {.forwards = true});
     pros::delay(900);
-    topMotor.move(50);
-    pros::delay(1000); // make longer if want to score in middle more
+    topMotor.move(-127);
+    conveyorMotor.move(-127);
+    pros::delay(2000); // make longer if want to score in middle more
     conveyorMotor.move(0);
     topMotor.move(0);
     
     // Going in front of loader
-    chassis.turnToPoint(-45, -51, 3000);
-    chassis.moveToPoint(-45, -51, 5000);
+    chassis.turnToPoint(-45, -50.25, 3000, {.forwards = false});
+    chassis.moveToPoint(-45, -50.25, 5000, {.forwards = false});
     scraper.set_value(HIGH);
     chassis.turnToHeading(270, 1000, {}, false);
     chassis.setPose(-47, -47, 270);
 
     // Going into loader 
-    chassis.moveToPoint(-55, -47, 1000, {.minSpeed = 60});
+    chassis.moveToPoint(-49, -47, 1000, {.minSpeed = 40});
 	conveyorMotor.move(127);
     pros::delay(1000);
 
     // Scoring in long goal
     chassis.turnToHeading(270, 1000);
-    chassis.moveToPoint(-27, -47, 2000, {.forwards = false});
+    chassis.moveToPoint(-26, -47, 2000, {.forwards = false});
     pros::delay(700);
     topMotor.move(127);
     pros::delay(2000);
     
     // Descore
-    descoreMacro(false);
+    descoreMacro(true);
     pros::delay(500);
 }
 void rightAllLongGoal() {
-    // Three balls + 1 under goal (mirrored from leftAllLongGoal)
+    // Three balls + 1 under goal
     chassis.moveToPose(-22.22, -22.22, 150, 2000, {.lead = .3, .minSpeed = 50});
     conveyorMotor.move(127);
     pros::delay(800);
     scraper.set_value(HIGH);
-    chassis.moveToPoint(-5, -46, 2800, {.maxSpeed = 50});
+    chassis.moveToPoint(-4, -46, 2800, {.maxSpeed = 50});
     pros::delay(500);
     scraper.set_value(LOW);
 
-    // Going to position to go in front of loader
-    chassis.moveToPose(-22.22, -22.22, 225, 5000, {.forwards = false, .lead = .3});
+    // Move back to position to go in front of loader
+    chassis.moveToPoint(-22.22, -22.22, 2000, {.forwards = false});
     conveyorMotor.move(0);
     
-    // Getting in front of loader
-    chassis.turnToPoint(-45, -51, 3000); // needs to be adjusted
-    chassis.moveToPoint(-45, -51, 5000); // needs to be adjusted
+    // Going in front of loader
+    chassis.turnToPoint(-45, -50.25, 3000, {.forwards = false});
+    chassis.moveToPoint(-45, -50.25, 5000, {.forwards = false});
+    scraper.set_value(HIGH);
     chassis.turnToHeading(270, 1000, {}, false);
     chassis.setPose(-47, -47, 270);
 
-    // Going into loader
-    scraper.set_value(HIGH);
-    chassis.moveToPoint(-55, -47, 1000, {.minSpeed = 60});
-	conveyorMotor.move(127);
+    // Scoring in long goal
+    chassis.moveToPoint(-26, -47, 2000, {.forwards = false});
+    pros::delay(400);
+    conveyorMotor.move(127);
+    topMotor.move(127);
+    pros::delay(1500);
+    topMotor.move(0);
+
+    // Going into loader 
+    chassis.moveToPoint(-49, -47, 1000, {.minSpeed = 40});
     pros::delay(1500);
 
-    // Scoring in long goal
-    chassis.turnToHeading(270, 1000);
-    chassis.moveToPoint(-27, -47, 2000, {.forwards = false});
+    // Scoring in long goal again
+    chassis.moveToPoint(-26, -47, 2000, {.forwards = false});
     pros::delay(700);
     topMotor.move(127);
-    scraper.set_value(LOW);
-    left_motor_group.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
-    right_motor_group.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
-
-    // Get rid of during competition
-    pros::delay(5000); 
-    conveyorMotor.move(0);
-    topMotor.move(0);
+    chassis.setBrakeMode(pros::E_MOTOR_BRAKE_HOLD);
+    right_motor_group.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
+    left_motor_group.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
+    pros::delay(2000);
 }
 void rightFourBallRush() {
-    // Three balls (mirrored from leftFourBallRush)
+    // Three balls
     chassis.moveToPose(-22.22, -22.22, 150, 2000, {.lead = .3, .minSpeed = 50});
     conveyorMotor.move(127);
     pros::delay(800);
     scraper.set_value(HIGH);
-    pros::delay(200);
+    pros::delay(500);
     
     // Going in front of long goal
-    chassis.turnToPoint(-40, -48, 3000, {.forwards = false}); 
-    chassis.moveToPoint(-40, -48, 3000, {.forwards = false});
+    chassis.turnToPoint(-40, -44, 3000, {.forwards = false}); 
+    chassis.moveToPoint(-40, -44, 3000, {.forwards = false, .minSpeed = 50});
     chassis.turnToHeading(270, 1000, {}, false);
     chassis.setPose(-47, -47, 270);
     scraper.set_value(LOW);
     
     // Scoring in long goal
-    chassis.moveToPoint(-26, -47, 2000, {.forwards = false});
-    pros::delay(300);
+    chassis.moveToPoint(-25, -47, 2000, {.forwards = false});
+    pros::delay(400);
     topMotor.move(127);
-    pros::delay(1500);
+    pros::delay(1000);
     descoreMacro(true);
 }
 void SAWP() { // place only on right side
@@ -456,7 +465,7 @@ void SAWP() { // place only on right side
     chassis.turnToPoint(-60, -47, 200);
     chassis.moveToPoint(-60, -47, 500, {.minSpeed = 40});
     conveyorMotor.move(127);
-    pros::delay(250);
+    pros::delay(1500);
 
     //Scoring in first goal
     chassis.turnToPoint(-27, -48, 1000, {.forwards = false}); // not needed if straight
@@ -464,11 +473,11 @@ void SAWP() { // place only on right side
     pros::delay(600);
     topMotor.move(127);
     scraper.set_value(LOW);
-    pros::delay(1000);
+    pros::delay(2000);
     topMotor.move(0);
 
     //First 3 balls
-    chassis.moveToPoint(-27, -26, 5000, {.minSpeed=40, .earlyExitRange=1});
+    chassis.moveToPoint(-24, -26, 5000, {.minSpeed=40, .earlyExitRange=1});
     pros::delay(800);
     scraper.set_value(HIGH);
     pros::delay(500);
@@ -477,82 +486,81 @@ void SAWP() { // place only on right side
 
     // Second 3 balls
 
-    chassis.moveToPoint(-24, 24, 2000, {});
+    chassis.moveToPoint(-24, 28, 2000, {});
     pros::delay(800);
     scraper.set_value(HIGH);
     
 
     //// Middle scoring par
-    chassis.turnToPoint(-14,14, 1000, {.forwards = false});
-    chassis.moveToPoint(-14, 14, 5000,  {.forwards = false});
+    chassis.turnToPoint(-11,18, 1000, {.forwards = false});
+    chassis.moveToPoint(-11, 18, 5000,  {.forwards = false});
 
-
+    chassis.turnToPoint(-47, 53, 2000);
     pros::delay(100);
     topMotor.move(50);
     pros::delay(1000);
-    // chassis.turnToPoint(-47, 47, 2000);
     chassis.moveToPoint(-47, 53, 5000);
     topMotor.move(0);
-    // pros::delay(7000);
-    // return;
-    // // Second loader
-    // // scraper.set_value(HIGH);
+    pros::delay(2000);
+
+    // Second loader
     chassis.turnToPoint(-60, 53, 2000);
     chassis.moveToPoint(-60, 53, 3000, {.minSpeed=40});
-    pros::delay(1000);
+    pros::delay(2000);
 
     // Second goal scoring
-    chassis.turnToPoint(-30, 53, 2000, {.forwards = false});
-    chassis.moveToPoint(-30, 53, 5000, {.forwards = false, .minSpeed=40});
+    chassis.turnToPoint(-32, 53, 2000, {.forwards = false});
+    chassis.moveToPoint(-32, 53, 5000, {.forwards = false, .minSpeed=40});
     pros::delay(500);
     topMotor.move(127);
     pros::delay(2000);
     // topMotor.move(127);
 }
 void skills() {
-    chassis.setPose(-47, 15, 0);
+    chassis.setPose(-47, 14, 0);
 
     // chassis.moveTo(-47, 15, 5000); starting position
-    chassis.turnToPoint(-47, 52, 5000);
-    chassis.moveToPoint(-47, 52, 5000);//get in front of loader
+    chassis.turnToPoint(-47, 50, 5000);
+    chassis.moveToPoint(-47, 50, 5000);//get in front of loader
     scraper.set_value(HIGH);
 
-    chassis.turnToPoint(-60, 52, 5000);//get balls in loader
-    chassis.moveToPoint(-60, 52, 5000);
+    chassis.turnToPoint(-60, 50, 5000);//get balls in loader
+    chassis.moveToPoint(-60, 50, 1000);
     conveyorMotor.move(127);
     pros::delay(2000);
 
-    // chassis.turnToPoint(-47, 47, 5000, {.forwards = false});//back up a bit
-    // chassis.moveToPoint(-47, 47, 5000, {.forwards = false});
-    // scraper.set_value(LOW);
-    // conveyorMotor.move(0);
+    chassis.turnToPoint(-47, 50, 5000, {.forwards = false});//back up a bit
+    chassis.moveToPoint(-47, 50, 5000, {.forwards = false});
+    scraper.set_value(LOW);
+    conveyorMotor.move(0);
 
-    // chassis.turnToPoint(-36, 59, 5000);//get in position to go across
-    // chassis.moveToPoint(-36, 59, 5000);
+    chassis.turnToPoint(-36, 66, 5000);//get in position to go across
+    chassis.moveToPoint(-36, 66, 5000);
     
-    // chassis.turnToPoint(36, 59, 5000);//get to other side
-    // chassis.moveToPoint(36, 59, 5000);
+    chassis.turnToPoint(36, 67, 5000);//get to other side
+    chassis.moveToPoint(36, 67, 5000);
 
-    // chassis.turnToPoint(47, 47, 5000);//get in front of goal
-    // chassis.moveToPoint(47, 47, 5000);
+    chassis.turnToPoint(47, 54, 5000);//get in front of goal
+    chassis.moveToPoint(47, 54, 5000);
 
-    // chassis.turnToPoint(32, 47, 5000, {.forwards = false});//score first goal
-    // chassis.moveToPoint(32, 47, 5000, {.forwards = false});
-    // // conveyorMotor.move(127);
-    // // topMotor.move(127);
-    // // scraper.set_value(HIGH);
-    // pros::delay(2000);
+    chassis.turnToPoint(33, 54, 5000, {.forwards = false});//score first goal
+    chassis.moveToPoint(33, 54, 5000, {.forwards = false});
+    conveyorMotor.move(127);
+    pros::delay(500);
+    topMotor.move(127);
+    scraper.set_value(HIGH);
+    pros::delay(2000);
 
-    // chassis.turnToPoint(56, 47, 5000);//get balls in loader
-    // chassis.moveToPoint(56, 47, 5000);
-    // // topMotor.move(0);
-    // pros::delay(2000);
+    chassis.turnToPoint(64, 54, 5000);//get balls in loader
+    chassis.moveToPoint(64, 54, 5000);
+    // topMotor.move(0);
+    pros::delay(2000);
 
-    // chassis.turnToPoint(32, 47, 5000, {.forwards = false});//score more
-    // chassis.moveToPoint(32, 47, 5000, {.forwards = false});
-    // pros::delay(1000);
-    // // topMotor.move(127);
-    // pros::delay(2000);
+    chassis.turnToPoint(33, 54, 5000, {.forwards = false});//score more
+    chassis.moveToPoint(33, 54, 5000, {.forwards = false});
+    pros::delay(1000);
+    topMotor.move(127);
+    pros::delay(2000);
 
     // chassis.turnToPoint(40, 47, 5000);//get in position to go across
     // chassis.moveToPoint(40, 47, 5000);
@@ -619,15 +627,15 @@ void descoreMacro(bool forward) {
     topMotor.move(0);
 
     chassis.setPose(0,0,0);
-    chassis.moveToPose(12.3, 14, 3, 1000, {.lead = .01, .minSpeed = 50});
-    chassis.turnToHeading(2.5, 2000); // Maybe change to 0 if angle allows
-    //once pid tuned, make timeout smaller
+    chassis.moveToPose(13, 14, 3, 1500, {.lead = .01, .minSpeed = 50});
+    chassis.turnToHeading(1, 500);
     if(forward){
-        chassis.moveToPoint(10, -18, 2000, {.forwards = false, .minSpeed=30});
+        chassis.moveToPoint(11, -18, 2000, {.forwards = false, .minSpeed=30});
         pros::delay(3000);
-        left_motor_group.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
-        right_motor_group.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
-        pros::delay(5000);
+        chassis.setBrakeMode(pros::E_MOTOR_BRAKE_HOLD);
+        right_motor_group.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
+        left_motor_group.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
+        pros::delay(500);
     }
 }
 /**
@@ -645,34 +653,7 @@ void descoreMacro(bool forward) {
  */
 
 void opcontrol() {
-    /*
-    // conveyorMotor.move(127);
-    // pros::delay(100000);
-    // chassis.setPose(-61.3, -16.8, 90);
-    //             chassis.setPose(-47, 15, 0);
-    // pros::delay(1000);
-    // skills();
-
-    // tuningLateralI();
-
-    // chassis.setPose(-61.3, 16.8, 90);
-    // SAWP();
-
-    // for(int i = 0; i < 3; i++) {
-    //     conveyorMotor.move(-127);
-    //     pros::delay(100);
-    //     conveyorMotor.move(0);
-    //     pros::delay(3000);
-    //     descoreMacro();
-    //     pros::delay(2000);
-    //     chassis.moveToPose(0, 0, 0, 2000, {.forwards = false});
-    //     pros::delay(2000);
-    // }
-
-    // pros::delay(3000);
-    // skills();
-    // pros::delay(1000);
-    */
+    
 	while (true) {
         // get joystick positions
         int leftY = controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
