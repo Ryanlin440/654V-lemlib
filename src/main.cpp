@@ -251,7 +251,7 @@ void leftMiddleControl() {
     conveyorMotor.move(127);
     pros::delay(800);
     scraper.set_value(HIGH);
-    chassis.moveToPoint(-4, 46, 2800, {.maxSpeed = 50});
+    chassis.moveToPoint(-4, 46, 2800, {.maxSpeed = 50}); // ryan wants to get rid off.
     pros::delay(500);
     scraper.set_value(LOW);
 
@@ -280,7 +280,7 @@ void leftMiddleControl() {
     chassis.moveToPoint(-25, 47, 2000, {.forwards = false});
     pros::delay(700);
     topMotor.move(127);
-    pros::delay(2000);
+    pros::delay(2000); // make shorter if needed. 3-4 balls needed.
     
     // Descore
     descoreMacro(true);
@@ -291,7 +291,7 @@ void leftAllLongGoal() {
     conveyorMotor.move(127);
     pros::delay(800);
     scraper.set_value(HIGH);
-    chassis.moveToPoint(-4, 46, 2800, {.maxSpeed = 50});
+    chassis.moveToPoint(-4, 46, 2800, {.maxSpeed = 50}); // get rid off max cuz ryan
     pros::delay(500);
     scraper.set_value(LOW);
 
@@ -322,6 +322,15 @@ void leftAllLongGoal() {
     chassis.moveToPoint(-25, 47, 2000, {.forwards = false});
     pros::delay(700);
     topMotor.move(127);
+    pros::delay(1000);
+    conveyorMotor.move(0);
+    topMotor.move(0);
+
+    // Bumping
+    chassis.moveToPoint(-30, 47, 2000, {.forwards = false});
+    chassis.moveToPoint(-25, 47, 2000, {.forwards = false, .minSpeed = 70}); // Make faster if needed
+    pros::delay(700);
+
     chassis.setBrakeMode(pros::E_MOTOR_BRAKE_HOLD);
     right_motor_group.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
     left_motor_group.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
@@ -329,9 +338,9 @@ void leftAllLongGoal() {
 void leftFourBallRush() {
     // Three balls 
     chassis.moveToPose(-26.22, 22.22, 30, 2000, {.lead = .29, .minSpeed = 50});
-    // conveyorMotor.move(127);
+    conveyorMotor.move(127);
     pros::delay(700);
-    // scraper.set_value(HIGH);
+    scraper.set_value(HIGH);
     pros::delay(600);
     
     // Going in front of long goal
@@ -339,13 +348,13 @@ void leftFourBallRush() {
     chassis.moveToPoint(-35, 42.5, 3000, {.forwards = false, .minSpeed = 50});
     chassis.turnToHeading(270, 1000, {}, false);
     chassis.setPose(-42, 47, 270);
-    // scraper.set_value(LOW);
+    scraper.set_value(LOW);
 
     // Scoring in long goal
     chassis.turnToPoint(-25, 47, 1000, {.forwards = false});
     chassis.moveToPoint(-25, 47, 1000, {.forwards = false});
     pros::delay(500);
-    // topMotor.move(127);
+    topMotor.move(127);
     pros::delay(1000);
     descoreMacro(true);
 }
@@ -356,7 +365,7 @@ void rightMiddleControl() {
     conveyorMotor.move(127);
     pros::delay(800);
     scraper.set_value(HIGH);
-    chassis.moveToPoint(-4, -46, 2800, {.maxSpeed = 50});
+    chassis.moveToPoint(-4, -46, 2800, {.maxSpeed = 50}); // ryan wants to get rid of maxSpeed.
     pros::delay(500);
     scraper.set_value(LOW);
 
@@ -367,7 +376,7 @@ void rightMiddleControl() {
     pros::delay(900);
     topMotor.move(-127);
     conveyorMotor.move(-127);
-    pros::delay(2000); // make longer if want to score in middle more
+    pros::delay(1000); // make shorter cuz ryan said so. 2000 too long
     conveyorMotor.move(0);
     topMotor.move(0);
     
@@ -388,7 +397,7 @@ void rightMiddleControl() {
     chassis.moveToPoint(-25, -47, 2000, {.forwards = false});
     pros::delay(700);
     topMotor.move(127);
-    pros::delay(2000);
+    pros::delay(2000); // make shorter if needed, only really need 3-4 balls
     
     // Descore
     descoreMacro(true);
@@ -430,6 +439,14 @@ void rightAllLongGoal() {
     chassis.moveToPoint(-25, -47, 2000, {.forwards = false});
     pros::delay(700);
     topMotor.move(127);
+    pros::delay(1000);
+    conveyorMotor.move(0);
+    topMotor.move(0);
+
+    // Bumping
+    chassis.moveToPoint(-30, 47, 2000, {.forwards = false});
+    chassis.moveToPoint(-25, 47, 2000, {.forwards = false, .minSpeed = 70}); // Make faster if needed
+    pros::delay(700);
     chassis.setBrakeMode(pros::E_MOTOR_BRAKE_HOLD);
     right_motor_group.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
     left_motor_group.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
@@ -466,7 +483,7 @@ void leftMiddleSAWP() {
     chassis.turnToPoint(-25, 46, 1000, {.forwards = false});
     chassis.moveToPoint(-54, 46, 500, {.minSpeed = 40});
     conveyorMotor.move(127);
-    pros::delay(1000);
+    pros::delay(1000); // possibly to long. Make shorter
 
     // Score in long goal
     chassis.turnToHeading(270, 1000);
@@ -485,7 +502,7 @@ void leftMiddleSAWP() {
     
     // Get the one ball under long goal
     chassis.turnToPoint(-4, 46, 2000);
-    chassis.moveToPoint(-4, 46, 2800, {.maxSpeed = 50});
+    chassis.moveToPoint(-4, 46, 2800, {.maxSpeed = 50}); // get rid of maxSpeed if ryan wants
     pros::delay(500);
     scraper.set_value(LOW);
     
@@ -498,7 +515,7 @@ void leftMiddleSAWP() {
     
     // Go back to point of 3 balls and point towards second 3 balls
     chassis.moveToPoint(-24, 26, 3000);
-    chassis.turnToPoint(-24, -28, 2000);
+    chassis.turnToPoint(-24, -28, 1000);
     
     // Get the second 3 balls
     chassis.moveToPoint(-24, -28, 2000, {});
@@ -539,7 +556,7 @@ void rightMiddleSAWP() {
     
     // Get the one ball under long goal
     chassis.turnToPoint(-4, -46, 2000);
-    chassis.moveToPoint(-4, -46, 2800, {.maxSpeed = 50});
+    chassis.moveToPoint(-4, -46, 2800, {.maxSpeed = 50}); // get rid of maxSpeed if ryan wants
     pros::delay(500);
     scraper.set_value(LOW);
     
@@ -547,19 +564,19 @@ void rightMiddleSAWP() {
     chassis.moveToPoint(-22.22, -22.22, 2000, {.forwards = false});
     chassis.turnToPoint(-12, -14, 2000);
     chassis.moveToPoint(-12, -14, 5000, {.forwards = true});
-    pros::delay(900);
+    pros::delay(900); // needed? shorten maybe
     topMotor.move(-127);
     conveyorMotor.move(-127);
-    pros::delay(2000); // adjust cause ryan doesn't like it this long
+    pros::delay(1000); // adjust cause ryan doesn't like it this long
     conveyorMotor.move(0);
     topMotor.move(0);
     
     // Go back to point of 3 balls and point towards second 3 balls
     chassis.moveToPoint(-24, -26, 3000, {.forwards = false});
-    chassis.turnToPoint(-24, 28, 2000);
+    chassis.turnToPoint(-24, 28, 1000);
     
     // Get the second 3 balls
-    chassis.moveToPoint(-24, 28, 2000, {});
+    chassis.moveToPoint(-24, 28, 2000, {}, true);
     conveyorMotor.move(127);
     pros::delay(500);
     scraper.set_value(HIGH);
@@ -700,7 +717,7 @@ void skills() {
             chassis.turnToPoint(45, -48, 2000);
             chassis.moveToPoint(45, -48, 5000, {.maxSpeed=50});
         }
-        pros::delay(500);
+        pros::delay(5000);
     }
     
     chassis.setPose(-32, -47, 0); // reset to right side long goal
@@ -814,6 +831,7 @@ void opcontrol() {
 
 //width 14.6 height 17.5
 void autonomous() {
+    // selector.run_auton();
 	switch (selectedAuton) {
         case 0: // User (manual/opcontrol)
             opcontrol();
@@ -866,3 +884,17 @@ void autonomous() {
     conveyorMotor.move(0);
 
 }
+
+rd::Selector selector("Autonomous Selector", {
+    {"User Control", opcontrol},
+    {"Skills", skills},
+    {"SAWP", leftMiddleSAWP},
+    {"SAWP", rightMiddleSAWP},
+    {"SAWP", longSAWP},
+    {"Left Middle", leftMiddleControl},
+    {"Left All", leftAllLongGoal},
+    {"Left Rush", leftFourBallRush},
+    {"Right Middle", rightMiddleControl},
+    {"Right All", rightAllLongGoal},
+    {"Right Rush", rightFourBallRush}
+});
