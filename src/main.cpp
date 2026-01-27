@@ -115,7 +115,7 @@ lemlib::Chassis chassis(drivetrain,         // drivetrain settings
 
 int selectedAuton = 0;
 bool autonSelected = false;
-const char* autonNames[] = {"User", "Skills", "SAWP", "Left: Middle Control", "Left: All Long Goal", "Left: Four Ball Rush", "Right: Middle Control", "Right: All Long Goal", "Right: Four Ball Rush"};
+const char* autonNames[] = {"User", "Skills", "Left: Middle SAWP", "Right: Middle SAWP", "SAWP (Long)", "Left: Middle Control", "Left: All Long Goal", "Left: Four Ball Rush", "Right: Middle Control", "Right: All Long Goal", "Right: Four Ball Rush"};
 
 void autonSelector() {
     controller.clear();
@@ -129,7 +129,7 @@ void autonSelector() {
 
         if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_RIGHT)) {
             selectedAuton++;
-            if (selectedAuton > 8) selectedAuton = 8;
+            if (selectedAuton > 10) selectedAuton = 10;
         }
 
         if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_X)) {
@@ -458,7 +458,122 @@ void rightFourBallRush() {
     pros::delay(1000);
     descoreMacro(true);
 }
-void SAWP() { // place only on right side
+
+void leftMiddleSAWP() { // left side middle SAWP
+    // Goes to loader
+    chassis.moveToPoint(-45, 40, 2000, {.minSpeed = 60, .earlyExitRange = 5});
+    scraper.set_value(HIGH);
+    chassis.moveToPoint(-60, 49, 500, {.minSpeed = 40});
+    chassis.turnToPoint(-25, 46, 1000, {.forwards = false});
+    chassis.moveToPoint(-54, 46, 500, {.minSpeed = 40});
+    conveyorMotor.move(127);
+    pros::delay(1000);
+
+    // Score in long goal
+    chassis.turnToHeading(270, 1000);
+    chassis.moveToPoint(-27, 46, 4000, {.forwards = false});
+    pros::delay(600);
+    topMotor.move(127);
+    scraper.set_value(LOW);
+    pros::delay(1000);
+    topMotor.move(0);
+
+    // Get 3 balls
+    chassis.moveToPoint(-24, 26, 5000, {.maxSpeed=75, .minSpeed=30, .earlyExitRange=1});
+    pros::delay(800);
+    scraper.set_value(HIGH);
+    pros::delay(200);
+    
+    // Get the one ball under long goal
+    chassis.turnToPoint(-4, 46, 2000);
+    chassis.moveToPoint(-4, 46, 2800, {.maxSpeed = 50});
+    pros::delay(500);
+    scraper.set_value(LOW);
+    
+    // Go to score in middle (pointing backwards for left)
+    chassis.moveToPose(-7, 14, 315, 5000, {.forwards = false, .lead = .3});
+    pros::delay(900);
+    topMotor.move(50);
+    pros::delay(2000);
+    topMotor.move(0);
+    
+    // Go back to point of 3 balls and point towards second 3 balls
+    chassis.moveToPoint(-24, 26, 3000);
+    chassis.turnToPoint(-24, 28, 2000);
+    
+    // Get the second 3 balls
+    chassis.moveToPoint(-24, 28, 2000, {});
+    pros::delay(500);
+    scraper.set_value(HIGH);
+    
+    // Score in middle (for left it should have .forwards = true)
+    chassis.turnToPoint(-11, 18, 1000, {.forwards = true});
+    chassis.moveToPoint(-11, 18, 5000, {.forwards = true});
+    pros::delay(100);
+    topMotor.move(50);
+    pros::delay(1500);
+    topMotor.move(0);
+}
+void rightMiddleSAWP() { // right side middle SAWP
+    // Goes to loader
+    chassis.moveToPoint(-45, -40, 2000, {.minSpeed = 60, .earlyExitRange = 5});
+    scraper.set_value(HIGH);
+    chassis.moveToPoint(-60, -49, 500, {.minSpeed = 40});
+    chassis.turnToPoint(-25, -46, 1000, {.forwards = false});
+    chassis.moveToPoint(-54, -46, 500, {.minSpeed = 40});
+    conveyorMotor.move(127);
+    pros::delay(1000);
+
+    // Score in long goal
+    chassis.turnToHeading(270, 1000);
+    chassis.moveToPoint(-27, -46, 4000, {.forwards = false});
+    pros::delay(600);
+    topMotor.move(127);
+    scraper.set_value(LOW);
+    pros::delay(1000);
+    topMotor.move(0);
+
+    // Get 3 balls
+    chassis.moveToPoint(-24, -26, 5000, {.maxSpeed=75, .minSpeed=30, .earlyExitRange=1});
+    pros::delay(800);
+    scraper.set_value(HIGH);
+    pros::delay(200);
+    
+    // Get the one ball under long goal
+    chassis.turnToPoint(-4, -46, 2000);
+    chassis.moveToPoint(-4, -46, 2800, {.maxSpeed = 50});
+    pros::delay(500);
+    scraper.set_value(LOW);
+    
+    // Go to score in middle (pointing forwards for right)
+    chassis.moveToPoint(-22.22, -22.22, 2000, {.forwards = false});
+    chassis.turnToPoint(-12, -14, 2000);
+    chassis.moveToPoint(-12, -14, 5000, {.forwards = true});
+    pros::delay(900);
+    topMotor.move(127);
+    conveyorMotor.move(127);
+    pros::delay(2000);
+    conveyorMotor.move(0);
+    topMotor.move(0);
+    
+    // Go back to point of 3 balls and point towards second 3 balls
+    chassis.moveToPoint(-24, -26, 3000);
+    chassis.turnToPoint(-24, -28, 2000);
+    
+    // Get the second 3 balls
+    chassis.moveToPoint(-24, -28, 2000, {});
+    pros::delay(500);
+    scraper.set_value(HIGH);
+    
+    // Score in middle
+    chassis.turnToPoint(-11, -18, 1000, {.forwards = false});
+    chassis.moveToPoint(-11, -18, 5000, {.forwards = false});
+    pros::delay(100);
+    topMotor.move(50);
+    pros::delay(1500);
+    topMotor.move(0);
+}
+void longSAWP() { // place only on right side
     //First loader
     chassis.moveToPoint(-45, -40, 2000, {.minSpeed = 60, .earlyExitRange = 5}); //Position first 
     scraper.set_value(HIGH);
@@ -470,7 +585,7 @@ void SAWP() { // place only on right side
 
     //Scoring in first goal
     chassis.turnToHeading(270, 1000);
-    chassis.moveToPoint(-27, -46,4000, {.forwards = false}); //Long goal - X smaller to get closer
+    chassis.moveToPoint(-25, -46,4000, {.forwards = false}); //Long goal - X smaller to get closer
     pros::delay(600);
     topMotor.move(127);
     scraper.set_value(LOW);
@@ -482,7 +597,7 @@ void SAWP() { // place only on right side
     pros::delay(800); // possibly need to adjust
     scraper.set_value(HIGH);
     pros::delay(200);
-    chassis.turnToPoint(-24, 26, 2000, {});
+    chassis.turnToPoint(-24, 26, 2000, {}, false);
     scraper.set_value(LOW);
 
     // Second 3 balls
@@ -508,8 +623,8 @@ void SAWP() { // place only on right side
     pros::delay(1000);
 
     // Second goal scoring
-    chassis.turnToPoint(-30, 53, 2000, {.forwards = false});
-    chassis.moveToPoint(-30, 53, 5000, {.forwards = false});
+    chassis.turnToPoint(-32, 53, 2000, {.forwards = false});
+    chassis.moveToPoint(-32, 53, 5000, {.forwards = false});
     pros::delay(700);
     topMotor.move(127);
     pros::delay(2000);
@@ -711,35 +826,44 @@ void autonomous() {
             chassis.setPose(-47, 15, 0);
             skills();
             break;
-        case 2: // SAWP
-            chassis.setPose(-61.3, -16.8, 90);
-            SAWP();
+        case 2: // Left: Middle SAWP
+            chassis.setPose(-61.3, 16.8, 90);
+            leftMiddleSAWP();
             break;
-        case 3: // Left: Middle Control
+        case 3: // Right: Middle SAWP
+            chassis.setPose(-61.3, -16.8, 90);
+            rightMiddleSAWP();
+            break;
+        case 4: // SAWP (Long)
+            chassis.setPose(-61.3, -16.8, 90);
+            longSAWP();
+            break;
+        case 5: // Left: Middle Control
             chassis.setPose(-61.3, 16.8, 90);
             leftMiddleControl();
             break;
-        case 4: // Left: All Long Goal
+        case 6: // Left: All Long Goal
             chassis.setPose(-61.3, 16.8, 90);
             leftAllLongGoal();
             break;
-        case 5: // Left: Four Ball Rush
+        case 7: // Left: Four Ball Rush
             chassis.setPose(-61.3, 16.8, 90);
             leftFourBallRush();
             break;
-        case 6: // Right: Middle Control
+        case 8: // Right: Middle Control
             chassis.setPose(-61.3, -16.8, 90);
             rightMiddleControl();
             break;
-        case 7: // Right: All Long Goal
+        case 9: // Right: All Long Goal
             chassis.setPose(-61.3, -16.8, 90);
             rightAllLongGoal();
             break;
-        case 8: // Right: Four Ball Rush
+        case 10: // Right: Four Ball Rush
             chassis.setPose(-61.3, -16.8, 90);
             rightFourBallRush();
             break;
         default:
             break;
     }
+    pros::delay(20);
 }
