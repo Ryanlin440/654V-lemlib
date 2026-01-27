@@ -470,7 +470,7 @@ void SAWP() { // place only on right side
 
     //Scoring in first goal
     chassis.turnToHeading(270, 1000);
-    chassis.moveToPoint(-25, -46,4000, {.forwards = false}); //Long goal - X smaller to get closer
+    chassis.moveToPoint(-27, -46,4000, {.forwards = false}); //Long goal - X smaller to get closer
     pros::delay(600);
     topMotor.move(127);
     scraper.set_value(LOW);
@@ -482,7 +482,7 @@ void SAWP() { // place only on right side
     pros::delay(800); // possibly need to adjust
     scraper.set_value(HIGH);
     pros::delay(200);
-    chassis.turnToPoint(-24, 26, 2000, {}, false);
+    chassis.turnToPoint(-24, 26, 2000, {});
     scraper.set_value(LOW);
 
     // Second 3 balls
@@ -508,8 +508,8 @@ void SAWP() { // place only on right side
     pros::delay(1000);
 
     // Second goal scoring
-    chassis.turnToPoint(-32, 53, 2000, {.forwards = false});
-    chassis.moveToPoint(-32, 53, 5000, {.forwards = false});
+    chassis.turnToPoint(-30, 53, 2000, {.forwards = false});
+    chassis.moveToPoint(-30, 53, 5000, {.forwards = false});
     pros::delay(700);
     topMotor.move(127);
     pros::delay(2000);
