@@ -115,7 +115,7 @@ lemlib::Chassis chassis(drivetrain,         // drivetrain settings
 
 int selectedAuton = 0;
 bool autonSelected = false;
-const char* autonNames[] = {"User", "Skills", "Left: Middle SAWP", "Right: Middle SAWP", "SAWP (Long)", "Left: Middle Control", "Left: All Long Goal", "Left: Four Ball Rush", "Right: Middle Control", "Right: All Long Goal", "Right: Four Ball Rush"};
+const char* autonNames[] = {"User", "Skills", "Left: Mid SAWP", "Right: Mid SAWP", "SAWP (Long)", "Left: Middle Control", "Left: All Long Goal", "Left: Four Ball Rush", "Right: Middle Control", "Right: All Long Goal", "Right: Four Ball Rush"};
 
 void autonSelector() {
     controller.clear();
@@ -192,13 +192,17 @@ void disabled() {}
  */
 
 void competition_initialize() {
-    // 0 is middle control
-    // 1 is all long goal
-    // 2 is four ball rush
-    // 3 is right side AWP
-    // 4 is SAWP
-    // 5 is skills
-    // 6 is user testing or opcontrol
+    // 0 is user/opcontrol
+    // 1 is skills
+    // 2 is left middle SAWP
+    // 3 is right middle SAWP
+    // 4 is SAWP (long)
+    // 5 is left middle control
+    // 6 is left all long goal
+    // 7 is left four ball rush
+    // 8 is right middle control
+    // 9 is right all long goal
+    // 10 is right four ball rush
 
     // selectedAuton = 0;  //change this everytime
     //autonSelector();
@@ -280,8 +284,6 @@ void leftMiddleControl() {
     
     // Descore
     descoreMacro(true);
-    pros::delay(500);
-
 }
 void leftAllLongGoal() {
     // Three balls + 1 under goal
@@ -323,7 +325,6 @@ void leftAllLongGoal() {
     chassis.setBrakeMode(pros::E_MOTOR_BRAKE_HOLD);
     right_motor_group.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
     left_motor_group.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
-    pros::delay(2000);
 }
 void leftFourBallRush() {
     // Three balls 
@@ -391,7 +392,6 @@ void rightMiddleControl() {
     
     // Descore
     descoreMacro(true);
-    pros::delay(500);
 }
 void rightAllLongGoal() {
     // Three balls + 1 under goal
@@ -433,7 +433,6 @@ void rightAllLongGoal() {
     chassis.setBrakeMode(pros::E_MOTOR_BRAKE_HOLD);
     right_motor_group.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
     left_motor_group.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
-    pros::delay(2000);
 }
 void rightFourBallRush() {
     // Three balls
@@ -459,7 +458,7 @@ void rightFourBallRush() {
     descoreMacro(true);
 }
 
-void leftMiddleSAWP() { // left side middle SAWP
+void leftMiddleSAWP() {
     // Goes to loader
     chassis.moveToPoint(-45, 40, 2000, {.minSpeed = 60, .earlyExitRange = 5});
     scraper.set_value(HIGH);
@@ -494,27 +493,26 @@ void leftMiddleSAWP() { // left side middle SAWP
     chassis.moveToPose(-7, 14, 315, 5000, {.forwards = false, .lead = .3});
     pros::delay(900);
     topMotor.move(50);
-    pros::delay(2000);
+    pros::delay(2000); // adjust cause ryan doesn't like it this long
     topMotor.move(0);
     
     // Go back to point of 3 balls and point towards second 3 balls
     chassis.moveToPoint(-24, 26, 3000);
-    chassis.turnToPoint(-24, 28, 2000);
+    chassis.turnToPoint(-24, -28, 2000);
     
     // Get the second 3 balls
-    chassis.moveToPoint(-24, 28, 2000, {});
+    chassis.moveToPoint(-24, -28, 2000, {});
     pros::delay(500);
     scraper.set_value(HIGH);
     
     // Score in middle (for left it should have .forwards = true)
-    chassis.turnToPoint(-11, 18, 1000, {.forwards = true});
-    chassis.moveToPoint(-11, 18, 5000, {.forwards = true});
+    chassis.turnToPoint(-11, -18, 1000, {.forwards = true});
+    chassis.moveToPoint(-11, -18, 5000, {.forwards = true});
     pros::delay(100);
-    topMotor.move(50);
-    pros::delay(1500);
-    topMotor.move(0);
+    conveyorMotor.move(-127);
+    topMotor.move(-127);
 }
-void rightMiddleSAWP() { // right side middle SAWP
+void rightMiddleSAWP() {
     // Goes to loader
     chassis.moveToPoint(-45, -40, 2000, {.minSpeed = 60, .earlyExitRange = 5});
     scraper.set_value(HIGH);
@@ -550,28 +548,27 @@ void rightMiddleSAWP() { // right side middle SAWP
     chassis.turnToPoint(-12, -14, 2000);
     chassis.moveToPoint(-12, -14, 5000, {.forwards = true});
     pros::delay(900);
-    topMotor.move(127);
-    conveyorMotor.move(127);
-    pros::delay(2000);
+    topMotor.move(-127);
+    conveyorMotor.move(-127);
+    pros::delay(2000); // adjust cause ryan doesn't like it this long
     conveyorMotor.move(0);
     topMotor.move(0);
     
     // Go back to point of 3 balls and point towards second 3 balls
-    chassis.moveToPoint(-24, -26, 3000);
-    chassis.turnToPoint(-24, -28, 2000);
+    chassis.moveToPoint(-24, -26, 3000, {.forwards = false});
+    chassis.turnToPoint(-24, 28, 2000);
     
     // Get the second 3 balls
-    chassis.moveToPoint(-24, -28, 2000, {});
+    chassis.moveToPoint(-24, 28, 2000, {});
+    conveyorMotor.move(127);
     pros::delay(500);
     scraper.set_value(HIGH);
     
     // Score in middle
-    chassis.turnToPoint(-11, -18, 1000, {.forwards = false});
-    chassis.moveToPoint(-11, -18, 5000, {.forwards = false});
+    chassis.turnToPoint(-11, 18, 1000, {.forwards = false});
+    chassis.moveToPoint(-11, 18, 5000, {.forwards = false});
     pros::delay(100);
     topMotor.move(50);
-    pros::delay(1500);
-    topMotor.move(0);
 }
 void longSAWP() { // place only on right side
     //First loader
@@ -627,9 +624,9 @@ void longSAWP() { // place only on right side
     chassis.moveToPoint(-32, 53, 5000, {.forwards = false});
     pros::delay(700);
     topMotor.move(127);
-    pros::delay(2000);
-    topMotor.move(0);
+
 }
+
 void skills() {
 
     int run = 0;
@@ -734,7 +731,6 @@ void descoreMacro(bool forward) {
         chassis.setBrakeMode(pros::E_MOTOR_BRAKE_HOLD);
         right_motor_group.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
         left_motor_group.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
-        pros::delay(500); // try with control switch, pretty sure just get rid off during comp.
     }
 }
 /**
@@ -865,5 +861,8 @@ void autonomous() {
         default:
             break;
     }
-    pros::delay(20);
+    pros::delay(4000); // get rid off during comp.
+    topMotor.move(0);
+    conveyorMotor.move(0);
+
 }
