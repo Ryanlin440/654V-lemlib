@@ -273,7 +273,7 @@ void leftMiddleControl() {
 
     // Scoring in long goal
     chassis.turnToHeading(270, 1000);
-    chassis.moveToPoint(-26, 47, 2000, {.forwards = false});
+    chassis.moveToPoint(-25, 47, 2000, {.forwards = false});
     pros::delay(700);
     topMotor.move(127);
     pros::delay(2000);
@@ -305,7 +305,7 @@ void leftAllLongGoal() {
     chassis.setPose(-47, 47, 270);
 
     // Scoring in long goal
-    chassis.moveToPoint(-26, 47, 2000, {.forwards = false});
+    chassis.moveToPoint(-25, 47, 2000, {.forwards = false});
     pros::delay(400);
     conveyorMotor.move(127);
     topMotor.move(127);
@@ -317,7 +317,7 @@ void leftAllLongGoal() {
     pros::delay(1500);
 
     // Scoring in long goal again
-    chassis.moveToPoint(-26, 47, 2000, {.forwards = false});
+    chassis.moveToPoint(-25, 47, 2000, {.forwards = false});
     pros::delay(700);
     topMotor.move(127);
     chassis.setBrakeMode(pros::E_MOTOR_BRAKE_HOLD);
@@ -341,7 +341,8 @@ void leftFourBallRush() {
     // scraper.set_value(LOW);
 
     // Scoring in long goal
-    chassis.moveToPoint(-24, 47, 1000, {.forwards = false});
+    chassis.turnToPoint(-25, 47, 1000, {.forwards = false});
+    chassis.moveToPoint(-25, 47, 1000, {.forwards = false});
     pros::delay(500);
     // topMotor.move(127);
     pros::delay(1000);
@@ -383,7 +384,7 @@ void rightMiddleControl() {
 
     // Scoring in long goal
     chassis.turnToHeading(270, 1000);
-    chassis.moveToPoint(-26, -47, 2000, {.forwards = false});
+    chassis.moveToPoint(-25, -47, 2000, {.forwards = false});
     pros::delay(700);
     topMotor.move(127);
     pros::delay(2000);
@@ -414,7 +415,7 @@ void rightAllLongGoal() {
     chassis.setPose(-47, -47, 270);
 
     // Scoring in long goal
-    chassis.moveToPoint(-26, -47, 2000, {.forwards = false});
+    chassis.moveToPoint(-25, -47, 2000, {.forwards = false});
     pros::delay(400);
     conveyorMotor.move(127);
     topMotor.move(127);
@@ -426,7 +427,7 @@ void rightAllLongGoal() {
     pros::delay(1500);
 
     // Scoring in long goal again
-    chassis.moveToPoint(-26, -47, 2000, {.forwards = false});
+    chassis.moveToPoint(-25, -47, 2000, {.forwards = false});
     pros::delay(700);
     topMotor.move(127);
     chassis.setBrakeMode(pros::E_MOTOR_BRAKE_HOLD);
@@ -450,7 +451,8 @@ void rightFourBallRush() {
     scraper.set_value(LOW);
     
     // Scoring in long goal
-    chassis.moveToPoint(-24, -47, 1000, {.forwards = false});
+    chassis.turnToPoint(-25, -47, 1000, {.forwards = false});
+    chassis.moveToPoint(-25, -47, 1000, {.forwards = false});
     pros::delay(500);
     topMotor.move(127);
     pros::delay(1000);
@@ -524,9 +526,12 @@ void skills() {
     pros::delay(1500);
 
     for(int i = 0; i < 2; i++){
-        chassis.setPose(-47, 49, 0);
+        if(run != 0){
+            chassis.setPose(-47, 49, 0);
+        }
         chassis.turnToHeading(270, 2000); //get balls in loader
         chassis.moveToPoint(-58, 49, 1000);
+        chassis.turnToPoint(-47, 49, 5000, {.forwards = false});
         // conveyorMotor.move(127);
         pros::delay(2000);
 
@@ -540,13 +545,17 @@ void skills() {
         
         
         chassis.turnToHeading(90, 1000); //go across
-        chassis.moveToPoint(36, 63.5, 5000, {.maxSpeed = 60});
+        chassis.turnToPoint(0, 63.5, 2000);
+        chassis.moveToPoint(0, 63.5, 5000, {.minSpeed = 50});
+        chassis.turnToPoint(36, 63.5, 2000, {});
+        chassis.moveToPoint(36, 63.5, 5000, {.minSpeed = 50});
 
-        chassis.turnToHeading(135, 1000);//get in front of goal
-        chassis.moveToPoint(47, 50.5, 5000);
+        chassis.turnToPoint(47, 50, 2000); // get in front of loader
+        chassis.moveToPoint(47, 50, 5000);
 
         chassis.turnToHeading(90, 1000); //score first goal
-        chassis.moveToPoint(34, 50.5, 5000, {.forwards = false});
+        chassis.turnToPoint(34, 50, 2000, {.forwards = false});
+        chassis.moveToPoint(34, 50, 5000, {.forwards = false});
         // conveyorMotor.move(127);
         pros::delay(500);
         // topMotor.move(127);
@@ -555,14 +564,15 @@ void skills() {
 
         
         chassis.setPose(34, 50, 90);// getting balls in loader
-        chassis.turnToPoint(65, 52, 5000);
-        chassis.moveToPoint(65, 52, 5000);
-        chassis.turnToPoint(34, 50, 5000, {.forwards = false});
+        chassis.turnToPoint(65, 49, 5000);
+        chassis.moveToPoint(65, 49, 5000);
+        chassis.turnToPoint(34, 49, 5000, {.forwards = false});
         // topMotor.move(0);
         pros::delay(2000);
 
         //score more
         chassis.moveToPoint(34, 50, 5000, {.forwards = false});
+        chassis.turnToPoint(45, 50, 2000);
         pros::delay(1000);
         // topMotor.move(127);
         pros::delay(2000);
@@ -575,10 +585,10 @@ void skills() {
             chassis.turnToHeading(180, 1000);
             run++;
 
-            chassis.moveToPoint(45, -48, 5000);
+            chassis.turnToPoint(45, -48, 2000);
+            chassis.moveToPoint(45, -48, 5000, {.maxSpeed=50});
         }
         pros::delay(500);
-        return;
     }
     
     chassis.setPose(-32, -47, 0); // reset to right side long goal
