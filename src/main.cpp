@@ -56,7 +56,7 @@ pros::Motor topMotor(10, pros::MotorGears::blue);
 pros::adi::DigitalOut scraper('a',LOW);
 pros::adi::DigitalOut middleGoal('b', HIGH);
 pros::adi::DigitalOut leftDescore('c',LOW);
-bool scraperBool, middleGoalBool, leftDescoreBool;
+bool scraperBool, leftDescoreBool;
 
 bool forwardOritentiation = true;
 
@@ -155,14 +155,20 @@ void initialize() {
 
     pros::lcd::register_btn1_cb(on_center_button);
     scraperBool = false;
-    middleGoalBool = HIGH;
     leftDescoreBool = false;
+
+    std::cout << "testing" << std::endl;
+
     pros::Task screenTask([&]() {
       while (true) {
         // print robot location to the brain screen
         pros::lcd::print(0, "X: %f", chassis.getPose().x);         // x
         pros::lcd::print(1, "Y: %f", chassis.getPose().y);         // y
         pros::lcd::print(2, "Theta: %f", chassis.getPose().theta); // heading
+
+        lemlib::Pose pose = chassis.getPose();
+        printf("X: %f, Y: %f, Theta: %f\n", pose.x, pose.y, pose.theta);
+
         // log position telemetry
         lemlib::telemetrySink()->info("Chassis pose: {}", chassis.getPose());
         // delay to save resources
@@ -789,19 +795,13 @@ void opcontrol() {
         }
         if (controller.get_digital(DIGITAL_L2)) {
             conveyorMotor.move(127);
-            if (middleGoalBool == LOW) {
-                topMotor.move(50);
-            } else {
-                topMotor.move(127);
-            }
+            topMotor.move(127);
         }else if (controller.get_digital(DIGITAL_L1)) {
-        	conveyorMotor.move(-127);
-        	topMotor.move(-127);  
+        	conveyorMotor.move(127);
+            topMotor.move(50);
 		}else if (controller.get_digital(DIGITAL_R2)) {
 			conveyorMotor.move(127);
-            topMotor.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
-            topMotor.brake();
-            
+            topMotor.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);            
         }else if (controller.get_digital(DIGITAL_R1)) {
           	conveyorMotor.move(-127);
           	topMotor.move(-127);  
@@ -817,14 +817,6 @@ void opcontrol() {
           leftDescoreBool = !leftDescoreBool;
           leftDescore.set_value(leftDescoreBool);
         }
-        if (controller.get_digital_new_press(DIGITAL_UP) && middleGoalBool==LOW) { // upper
-        //   middleGoal.set_value(HIGH);
-          middleGoalBool=HIGH;
-        }
-        if (controller.get_digital_new_press(DIGITAL_DOWN) && middleGoalBool==HIGH) {//middle
-        //   middleGoal.set_value(LOW);
-          middleGoalBool=LOW;
-		}
         pros::delay(10);
     }
 }
