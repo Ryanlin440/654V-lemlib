@@ -516,12 +516,12 @@ void leftMiddleSAWP() {
     chassis.moveToPose(-7, 14, 315, 5000, {.forwards = false, .lead = .3});
     pros::delay(900);
     topMotor.move(50);
-    pros::delay(2000); // adjust cause ryan doesn't like it this long
+    pros::delay(1000); // adjust cause ryan doesn't like it this long. Used to be 2000.
     topMotor.move(0);
     
     // Go back to point of 3 balls and point towards second 3 balls
     chassis.moveToPoint(-24, 26, 3000);
-    chassis.turnToPoint(-24, -28, 1000);
+    chassis.turnToPoint(-24, -26, 1000);
     
     // Get the second 3 balls
     chassis.moveToPoint(-24, -28, 2000, {});
@@ -573,13 +573,13 @@ void rightMiddleSAWP() {
     pros::delay(900); // needed? shorten maybe
     topMotor.move(-127);
     conveyorMotor.move(-127);
-    pros::delay(1000); // adjust cause ryan doesn't like it this long
+    pros::delay(1000); // adjust cause ryan doesn't like it this long. Used to be 2000.
     conveyorMotor.move(0);
     topMotor.move(0);
     
     // Go back to point of 3 balls and point towards second 3 balls
     chassis.moveToPoint(-24, -26, 3000, {.forwards = false});
-    chassis.turnToPoint(-24, 28, 1000);
+    chassis.turnToPoint(-24, 26, 2000);
     
     // Get the second 3 balls
     chassis.moveToPoint(-24, 28, 2000, {}, true);
