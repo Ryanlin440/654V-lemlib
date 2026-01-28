@@ -328,7 +328,7 @@
     },
     "upload_options": {
       "icon": "clawbot",
-      "after": "screen"
+      "after": "run"
     },
     "use_early_access": false
   }
