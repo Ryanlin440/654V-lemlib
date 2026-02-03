@@ -69,22 +69,22 @@ lemlib::OdomSensors sensors(
     &imu     // inertial sensor
 );
 // lateral PID controller
-lemlib::ControllerSettings lateral_controller(6.3, // proportional gain (kP) 6.1
-                                              0, // integral gain (kI)-.006 over .2
-                                              30, // derivative gain (kD) 10
-                                              0, // anti windup 1.8
-                                              0, // small error range, in inches  1
-                                              0, // small error range timeout, in milliseconds 100
-                                              0, // large error range, in inches  3
-                                              0, // large error range timeout, in milliseconds 500
-                                              15 // maximum acceleration (slew)20
+lemlib::ControllerSettings lateral_controller(5.6, // proportional gain (kP) 6.1
+                                              0.135, // integral gain (kI)-.006 over .2
+                                              34, // derivative gain (kD) 10
+                                              5, // anti windup 1.8
+                                              1, // small error range, in inches  1
+                                              100, // small error range timeout, in milliseconds 100
+                                              3, // large error range, in inches  3
+                                              500, // large error range timeout, in milliseconds 500
+                                              20 // maximum acceleration (slew)20
 );
 
 // angular PID controller
 lemlib::ControllerSettings angular_controller(1.6,   // proportional gain (kP) 1.5
-                       0.05,   // integral gain (kI) .08
+                       0.0049,   // integral gain (kI) .08
                        14,  // derivative gain (kD)//10.7 w/ ki  13.5
-                       25,   // anti windup  25
+                       0,   // anti windup  25
                        1,   // small error range, in degrees  1
                        100, // small error range timeout, in milliseconds  100
                        3,   // large error range, in degrees  3
@@ -149,9 +149,9 @@ void autonSelector() {
  */
 
 void initialize() {
-	pros::lcd::initialize(); // initialize brain screen
+	pros::lcd::initialize(); // initialize brain screen remove for robodash
     chassis.calibrate(); // calibrate sensors
-	pros::lcd::set_text(1, "Hello PROS User!");
+	//pros::lcd::set_text(1, "Hello PROS User!");
 
     pros::lcd::register_btn1_cb(on_center_button);
     scraperBool = false;
@@ -169,7 +169,7 @@ void initialize() {
       }
     });
 
-    autonSelector();//remove this aswell
+    // autonSelector();//remove this aswell
     autonomous();//⚠️ Remove this before competitions.
 }
 
@@ -208,11 +208,14 @@ void competition_initialize() {
 }
 void tuningLateralPD() {
   for (int i = 0; i < 4; i++) {
-            chassis.turnToPoint(0, 48, 2000);
-            chassis.moveToPoint(0, 48, 2000, {}, false);
+            pros::delay(2000);
+            chassis.setPose(0, 0, 0);
+    
+            chassis.turnToPoint(0, 24, 2000);
+            chassis.moveToPoint(0, 24, 2000, {}, false);
             // chassis.turnToPoint(0, 48, 2000);
             // chassis.moveToPoint(0, 48, 2000);
-            pros::delay(1000);
+            pros::delay(2000);
             chassis.moveToPose(0, 0, 0, 2000, {.forwards = false});//.earlyExitRange = 0}
         }
         
@@ -235,9 +238,11 @@ void tuningLateralI() {
 
 void tuningAngularPD() {
   for (int i = 0; i < 8; i++) {
-        chassis.turnToHeading(90, 2000);
-        chassis.turnToHeading(180, 2000);
-        chassis.turnToHeading(0, 2000);
+        chassis.turnToHeading(90, 4000);
+        pros::delay(2000);
+        // chassis.turnToHeading(180, 4000);
+        // pros::delay(2000);
+        chassis.turnToHeading(0, 4000,  {.direction = lemlib::AngularDirection::CCW_COUNTERCLOCKWISE});
   }
 
   
@@ -345,20 +350,20 @@ void leftAllLongGoal() {
 }
 void leftFourBallRush() {
     // Three balls 
-    chassis.moveToPose(-26.22, 22.22, 30, 2000, {.lead = .29, .minSpeed = 50});
+    chassis.moveToPose(-22.22, 22.22, 30, 2000, {.lead = .29, .minSpeed = 50});
     conveyorMotor.move(127);
     pros::delay(700);
     scraper.set_value(HIGH);
     pros::delay(600);
     
     // Going in front of long goal
-    chassis.turnToPoint(-35, 42.5, 500, {.forwards = false}); 
-    chassis.moveToPoint(-35, 42.5, 3000, {.forwards = false, .minSpeed = 50});
+    chassis.turnToPoint(-40, 43, 500, {.forwards = false}); 
+    chassis.moveToPoint(-40, 43, 3000, {.forwards = false, .minSpeed = 50});
     chassis.turnToHeading(270, 1000, {}, false);
-    chassis.setPose(-42, 47, 270);
+    chassis.setPose(-42, 47, 270);   
     scraper.set_value(LOW);
 
-    // Scoring in long goal
+    // // Scoring in long goal
     chassis.turnToPoint(-25, 47, 1000, {.forwards = false});
     chassis.moveToPoint(-25, 47, 1000, {.forwards = false});
     pros::delay(500);
@@ -528,7 +533,7 @@ void leftMiddleSAWP() {
     
     // Get the second 3 balls
     chassis.moveToPoint(-24, -28, 2000, {});
-    pros::delay(500);
+    pros::delay(1000);
     scraper.set_value(HIGH);
     
     // Score in middle (for left it should have .forwards = true)
@@ -590,7 +595,7 @@ void rightMiddleSAWP() {
     // Get the second 3 balls
     chassis.moveToPoint(-24, 28, 2000, {}, true);
     conveyorMotor.move(127);
-    pros::delay(500);
+    pros::delay(1000);
     scraper.set_value(HIGH);
     
     // Score in middle
@@ -629,7 +634,7 @@ void longSAWP() { // place only on right side
 
     // Second 3 balls
     chassis.moveToPoint(-24, 28, 2000, {});
-    pros::delay(500); // adjust
+    pros::delay(1000); // adjust
     scraper.set_value(HIGH);
     
 
@@ -662,35 +667,35 @@ void skills() {
     int run = 0;
     chassis.setPose(-47, 14, 0);
 
-    chassis.turnToPoint(-47, 48, 5000);
-    chassis.moveToPoint(-47, 48, 5000); //get in front of loader
-    // scraper.set_value(HIGH);
+    chassis.turnToPoint(-47, 49, 5000);
+    chassis.moveToPoint(-47, 49, 5000); //get in front of loader
+    scraper.set_value(HIGH);
     pros::delay(1500);
 
     for(int i = 0; i < 2; i++){
         if(run != 0){
             chassis.setPose(-47, 49, 0);
         }
-        chassis.turnToHeading(270, 2000); //get balls in loader
+        chassis.turnToHeading(270, 2000); // get balls in loader
+        conveyorMotor.move(127);
         chassis.moveToPoint(-58, 49, 1000);
         chassis.turnToPoint(-47, 49, 5000, {.forwards = false});
-        // conveyorMotor.move(127);
-        pros::delay(2000);
+        pros::delay(1500);
 
         chassis.turnToPoint(-47, 49, 5000, {.forwards = false});//back up a bit
         chassis.moveToPoint(-47, 49, 5000, {.forwards = false});
-        // scraper.set_value(LOW);
-        // conveyorMotor.move(0);
+        scraper.set_value(LOW);
+        conveyorMotor.move(0);
 
         chassis.turnToPoint(-36, 63, 1000);//get in position to go across
         chassis.moveToPoint(-36, 63, 1000, {}, true);
         
         
         chassis.turnToHeading(90, 1000); //go across
-        chassis.turnToPoint(0, 63.5, 2000);
-        chassis.moveToPoint(0, 63.5, 5000, {.minSpeed = 50});
+        // chassis.turnToPoint(0, 63.5, 2000);
+        // chassis.moveToPoint(0, 63.5, 5000, {.minSpeed = 50});
         chassis.turnToPoint(36, 63.5, 2000, {});
-        chassis.moveToPoint(36, 63.5, 5000, {.minSpeed = 50});
+        chassis.moveToPoint(36, 63.5, 5000);//, {.minSpeed = 50}
 
         chassis.turnToPoint(47, 50, 2000); // get in front of loader
         chassis.moveToPoint(47, 50, 5000);
@@ -698,32 +703,33 @@ void skills() {
         chassis.turnToHeading(90, 1000); //score first goal
         chassis.turnToPoint(34, 50, 2000, {.forwards = false});
         chassis.moveToPoint(34, 50, 5000, {.forwards = false});
-        // conveyorMotor.move(127);
+        conveyorMotor.move(127);
         pros::delay(500);
-        // topMotor.move(127);
-        // scraper.set_value(HIGH);
+        topMotor.move(127);
+        scraper.set_value(HIGH);
         pros::delay(2000);
 
-        
-        chassis.setPose(34, 50, 90);// getting balls in loader
+
+        chassis.setPose(34, 50, 90); // getting balls in loader
+        topMotor.move(0);
         chassis.turnToPoint(65, 49, 5000);
         chassis.moveToPoint(65, 49, 5000);
         chassis.turnToPoint(34, 49, 5000, {.forwards = false});
-        // topMotor.move(0);
         pros::delay(2000);
 
         //score more
         chassis.moveToPoint(34, 50, 5000, {.forwards = false});
         chassis.turnToPoint(45, 50, 2000);
         pros::delay(1000);
-        // topMotor.move(127);
+        topMotor.move(127);
         pros::delay(2000);
+        conveyorMotor.move(0);
+        topMotor.move(0);
 
         if(run == 0){
             chassis.turnToPoint(45, 50, 5000);//get in position to go across
             chassis.moveToPoint(45, 50, 5000);
-            // conveyorMotor.move(0);
-            // topMotor.move(0);
+            
             chassis.turnToHeading(180, 1000);
             run++;
 
@@ -753,7 +759,7 @@ void descoreMacro(bool forward) {
 
     chassis.setPose(0,0,0);
     chassis.moveToPose(13, 14, 3, 1500, {.lead = .01, .minSpeed = 50});
-    chassis.turnToHeading(1, 500, {}, true);
+    chassis.turnToHeading(-3, 500, {}, true);
     if(forward){
         chassis.moveToPoint(12, -18, 2000, {.forwards = false, .maxSpeed = 70, .minSpeed=30});
         chassis.turnToHeading(-5, 500);
@@ -781,9 +787,9 @@ void opcontrol() {
     chassis.setBrakeMode(pros::E_MOTOR_BRAKE_COAST);
     right_motor_group.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
     left_motor_group.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
-    // chassis.setPose(0,0,0);
-    // tuningLateralI();
-    // pros::delay(100);
+    chassis.setPose(0,0,0);
+    tuningLateralPD();
+    pros::delay(100);
 	while (true) {
         // get joystick positions
         int leftY = controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
@@ -831,69 +837,11 @@ void opcontrol() {
         pros::delay(10);
     }
 }
-
-//width 14.6 height 17.5
-void autonomous() {
-    leftDescore.set_value(HIGH);
-    // selector.run_auton();
-	switch (selectedAuton) {
-        case 0: // User (manual/opcontrol)
-            opcontrol();
-            break;
-        case 1: // Skills
-            chassis.setPose(-47, 15, 0);
-            skills();
-            break;
-        case 2: // Left: Middle SAWP
-            chassis.setPose(-61.3, 16.8, 90);
-            leftMiddleSAWP();
-            break;
-        case 3: // Right: Middle SAWP
-            chassis.setPose(-61.3, -16.8, 90);
-            rightMiddleSAWP();
-            break;
-        case 4: // SAWP (Long)
-            chassis.setPose(-61.3, -16.8, 90);
-            longSAWP();
-            break;
-        case 5: // Left: Middle Control
-            chassis.setPose(-61.3, 16.8, 90);
-            leftMiddleControl();
-            break;
-        case 6: // Left: All Long Goal
-            chassis.setPose(-61.3, 16.8, 90);
-            leftAllLongGoal();
-            break;
-        case 7: // Left: Four Ball Rush
-            chassis.setPose(-61.3, 16.8, 90);
-            leftFourBallRush();
-            break;
-        case 8: // Right: Middle Control
-            chassis.setPose(-61.3, -16.8, 90);
-            rightMiddleControl();
-            break;
-        case 9: // Right: All Long Goal
-            chassis.setPose(-61.3, -16.8, 90);
-            rightAllLongGoal();
-            break;
-        case 10: // Right: Four Ball Rush
-            chassis.setPose(-61.3, -16.8, 90);
-            rightFourBallRush();
-            break;
-        default:
-            break;
-    }
-    pros::delay(4000); // get rid off during comp.
-    topMotor.move(0);
-    conveyorMotor.move(0);
-
-}
-
 rd::Selector selector("Autonomous Selector", {
     {"User Control", opcontrol},
     {"Skills", skills},
-    {"SAWP", leftMiddleSAWP},
-    {"SAWP", rightMiddleSAWP},
+    {"SAWP left", leftMiddleSAWP},
+    {"SAWP right", rightMiddleSAWP},
     {"SAWP", longSAWP},
     {"Left Middle", leftMiddleControl},
     {"Left All", leftAllLongGoal},
@@ -902,3 +850,60 @@ rd::Selector selector("Autonomous Selector", {
     {"Right All", rightAllLongGoal},
     {"Right Rush", rightFourBallRush}
 });
+//width 14.6 height 17.5
+void autonomous() {
+    leftDescore.set_value(HIGH);
+    // selector.run_auton();
+	// switch (selectedAuton) {
+    //     case 0: // User (manual/opcontrol)
+    //         opcontrol();
+    //         break;
+    //     case 1: // Skills
+            chassis.setPose(-47, 15, 0);
+            skills();
+    //         break;
+    //     case 2: // Left: Middle SAWP
+            // chassis.setPose(-61.3, 16.8, 90);
+            // leftMiddleSAWP();
+    //         break;
+    //     case 3: // Right: Middle SAWP
+    //         chassis.setPose(-61.3, -16.8, 90);
+    //         rightMiddleSAWP();
+    //         break;
+    //     case 4: // SAWP (Long)
+            // chassis.setPose(-61.3, -16.8, 90);
+            // longSAWP();
+    //         break;
+    //     case 5: // Left: Middle Control
+            // chassis.setPose(-61.3, 16.8, 90);
+            // leftMiddleControl();
+    //         break;
+    //     case 6: // Left: All Long Goal
+    //         chassis.setPose(-61.3, 16.8, 90);
+    //         leftAllLongGoal();
+    //         break;
+    //     case 7: // Left: Four Ball Rush
+    //         chassis.setPose(-61.3, 16.8, 90);
+    //         leftFourBallRush();
+    //         break;
+    //     case 8: // Right: Middle Control
+    //         chassis.setPose(-61.3, -16.8, 90);
+    //         rightMiddleControl();
+    //         break;
+    //     case 9: // Right: All Long Goal
+    //         chassis.setPose(-61.3, -16.8, 90);
+    //         rightAllLongGoal();
+    //         break;
+    //     case 10: // Right: Four Ball Rush
+    //         chassis.setPose(-61.3, -16.8, 90);
+    //         rightFourBallRush();
+    //         break;
+    //     default:
+    //         break;
+    // }
+    // pros::delay(4000); // get rid off during comp.
+    topMotor.move(0);
+    // conveyorMotor.move(0);
+
+}
+
