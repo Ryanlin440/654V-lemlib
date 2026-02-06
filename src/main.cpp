@@ -170,6 +170,10 @@ void initialize() {
       }
     });
 
+    chassis.setBrakeMode(pros::E_MOTOR_BRAKE_COAST);
+    right_motor_group.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
+    left_motor_group.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
+
     autonSelector();//remove this aswell
     autonomous();//⚠️ Remove this before competitions.
 }
@@ -204,6 +208,10 @@ void competition_initialize() {
     // 9 is right all long goal
     // 10 is right four ball rush
 
+    chassis.setBrakeMode(pros::E_MOTOR_BRAKE_COAST);
+    right_motor_group.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
+    left_motor_group.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
+    
     // selectedAuton = 0;  //change this everytime
     //autonSelector();
 }
