@@ -59,7 +59,9 @@ pros::Motor armMotor(-13, pros::MotorGears::red);
 pros::adi::DigitalOut scraper('h',LOW);
 pros::adi::DigitalOut middleGoal('g', LOW);
 pros::adi::DigitalOut wing('e',LOW);
-bool scraperBool, wingBool, middleGoalBool;
+pros::adi::DigitalOut hood('f',LOW);
+
+bool scraperBool, wingBool, middleGoalBool, hoodBool;
 
 bool forwardOritentiation = true;
 
@@ -159,6 +161,7 @@ void initialize() {
     scraperBool = false;
     wingBool = false;
     middleGoalBool = false;
+    hoodBool = false;
     pros::Task screenTask([&]() {
       while (true) {
         // print robot location to the brain screen
@@ -849,15 +852,25 @@ void opcontrol() {
         }
         if (controller.get_digital(DIGITAL_L2)) {
             scoreTop();
+            hood.set_value(HIGH);
+            hoodBool=true;
         }else if (controller.get_digital(DIGITAL_L1)) {
             scoreMiddle();
+            hood.set_value(HIGH);
+            hoodBool=true;
 		}else if (controller.get_digital(DIGITAL_R2)) {
 			intake.move(127);
+            hood.set_value(LOW);
+            hoodBool=false;
         }else if (controller.get_digital(DIGITAL_R1)) {
           	intake.move(-127);
         }else {
           	intake.move(0);
         	
+        }
+        if(controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_LEFT)){
+            hoodBool=!hoodBool;
+            hood.set_value(hoodBool);
         }
         if (controller.get_digital_new_press(DIGITAL_B)) { // scraper
           scraperBool = !scraperBool;
@@ -866,6 +879,8 @@ void opcontrol() {
         if (controller.get_digital_new_press(DIGITAL_Y)) { // left descore toggle
           wingBool = !wingBool;
           wing.set_value(wingBool);
+          scraperBool = false;
+          scraper.set_value(scraperBool);
         }
         if (controller.get_digital_new_press(DIGITAL_UP) && middleGoalBool == false) {
           middleGoalBool = true;
