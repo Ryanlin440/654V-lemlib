@@ -13,7 +13,8 @@
 #include "pros/rtos.hpp"
 void scoreTop();
 void scoreMiddle();
-/**
+void park();
+/*
  * A callback function for LLEMU's center button.
  *
  * When this callback is fired, it will toggle line 2 of the LCD text between
@@ -223,34 +224,33 @@ void competition_initialize() {
 }
 void tuningLateralPD() {
   for (int i = 0; i < 4; i++) {
-            pros::delay(100);
-            chassis.setPose(0, 0, 0);
-    
-            chassis.turnToPoint(0, 48, 2000);
-            chassis.moveToPoint(0, 48, 2000, {}, false);
-            // chassis.turnToPoint(0, 48, 2000);
-            // chassis.moveToPoint(0, 48, 2000);
-            pros::delay(1500);
-            chassis.moveToPose(0, 0, 0, 2000,
-                               {.forwards = false}); //.earlyExitRange = 0}
-            pros::delay(3000);
-        }
+        pros::delay(100);
+        chassis.setPose(0, 0, 0);
+
+        chassis.turnToPoint(0, 48, 2000);
+        chassis.moveToPoint(0, 48, 2000, {}, false);
+        // chassis.turnToPoint(0, 48, 2000);
+        // chassis.moveToPoint(0, 48, 2000);
+        pros::delay(1500);
+        chassis.moveToPose(0, 0, 0, 2000,
+                            {.forwards = false}); //.earlyExitRange = 0}
+        pros::delay(3000);
+    }
         
 }
 void tuningLateralI() {
-        for (int i = 0; i < 4; i++) {
-            chassis.turnToPoint(0, 24, 5000);
-            chassis.moveToPoint(0, 24, 5000);
-            pros::delay(6000);
+    for (int i = 0; i < 4; i++) {
+        chassis.turnToPoint(0, 24, 5000);
+        chassis.moveToPoint(0, 24, 5000);
+        pros::delay(6000);
 
-            chassis.turnToPoint(0, 48, 5000);
-            chassis.moveToPoint(0, 48, 5000);
-            pros::delay(6000);
+        chassis.turnToPoint(0, 48, 5000);
+        chassis.moveToPoint(0, 48, 5000);
+        pros::delay(6000);
 
-            chassis.moveToPose(0, 0, 0, 4000, {.forwards = false});//.earlyExitRange = 0}
-        }
-        
-  
+        chassis.moveToPose(0, 0, 0, 4000, {.forwards = false});//.earlyExitRange = 0}
+    }
+    
 }
 
 void tuningAngularPD() {
@@ -275,7 +275,6 @@ void tuningAngularI() {
   }
 }
 
-float goingUnderLongGoalSpeed = 60;
 void leftMiddleControl() {
     chassis.setPose(-47, 14, 0);
     middleGoal.set_value(HIGH);
@@ -435,6 +434,7 @@ void longSAWP() { // place only on right side
 
 void skills() {
     int run = 0;
+    selectedAuton = 1;
     chassis.setPose(-47, 14, 0);
 
     chassis.turnToPoint(-47, 49, 5000);
@@ -547,12 +547,9 @@ void opcontrol() {
     left_motor_group.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
     scraperBool = false;
     wingBool = false;
-    middleGoalBool = true;
+    middleGoalBool = false;
     hoodBool = false;
-
-
-
-    
+    selectedAuton = 0;
 
 	while (true) {
         // get joystick positions
@@ -567,45 +564,51 @@ void opcontrol() {
         if (controller.get_digital_new_press(DIGITAL_X)) {
             forwardOritentiation=!forwardOritentiation;
         }
-        if (controller.get_digital(DIGITAL_L2)) {
- \
+        if (controller.get_digital(DIGITAL_L2)) { // top score
             scoreTop();
             
-        }else if (controller.get_digital(DIGITAL_L1)) {
-            
+        }else if (controller.get_digital(DIGITAL_L1)) { // middle score
             scoreMiddle();
             
-		}else if (controller.get_digital(DIGITAL_R2)) {
+		}else if (controller.get_digital(DIGITAL_R2)) { // intake
             hood.set_value(LOW);
             hoodBool=false;
 			intake.move(127);
             
-        }else if (controller.get_digital(DIGITAL_R1)) {
+        }else if (controller.get_digital(DIGITAL_R1)) { // outake
           	intake.move(-127);
         }else {
           	intake.move(0);
         	
         }
-        if(controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_LEFT)){
+        if(controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_RIGHT)){ // hood
             hoodBool=!hoodBool;
             hood.set_value(hoodBool);
+        }
+        if(controller.get_digital(pros::E_CONTROLLER_DIGITAL_LEFT) && controller.get_digital(pros::E_CONTROLLER_DIGITAL_A)){
+            park();
         }
         if (controller.get_digital_new_press(DIGITAL_B)) { // scraper
           scraperBool = !scraperBool;
           scraper.set_value(scraperBool);
         }
-        if (controller.get_digital_new_press(DIGITAL_Y)) { // left descore toggle
-          wingBool = !wingBool;
+        if (controller.get_digital(DIGITAL_Y)) { // left while held down
+          wingBool = true;
           wing.set_value(wingBool);
           scraperBool = false;
           scraper.set_value(scraperBool);
+        }else{ // down when not pressed
+            wingBool = false;
+            wing.set_value(wingBool);
         }
-        if (controller.get_digital_new_press(DIGITAL_UP) && middleGoalBool == false) {
+        if (controller.get_digital_new_press(DIGITAL_UP) && middleGoalBool == false) { // Going up
           middleGoalBool = true;
           middleGoal.set_value(HIGH);
-        } else if (controller.get_digital_new_press(DIGITAL_DOWN) && middleGoalBool == true) {
+        } else if (controller.get_digital_new_press(DIGITAL_DOWN) && middleGoalBool == true) { // Going down
           middleGoalBool = false;
           middleGoal.set_value(LOW);
+          wingBool = false;
+          wing.set_value(wingBool);
         }
         
         pros::delay(10);
@@ -620,6 +623,7 @@ rd::Selector selector("Autonomous Selector", {
     {"Move Forward", moveForward}
 
 });
+
 //width 14.6 height 17.5
 void autonomous() {
     // selector.run_auton();
@@ -657,20 +661,23 @@ void scoreTop() {
     }
     intake.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
     intake.brake();
-    armMotor.move_absolute(620, 127);
+    armMotor.move_absolute(620, speedForTop);
     pros::delay(300);
     armMotor.move_absolute(15, 40);
 }
 void scoreMiddle() {
     hoodBool=true;
     hood.set_value(HIGH);
-    int speedForMiddle = 60;
+    int speedForMiddle = 50;
     if(selectedAuton == 1){
         speedForMiddle = 40;
     }
     intake.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
     intake.brake();
-    armMotor.move_absolute(610, 60);
+    armMotor.move_absolute(610, speedForMiddle);
     pros::delay(500);
     armMotor.move_absolute(15, 40);
+}
+void park(){
+    armMotor.move_absolute(100, 127);
 }
