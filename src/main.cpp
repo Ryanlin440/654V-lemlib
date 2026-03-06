@@ -61,7 +61,7 @@ pros::Motor intake (9, pros::MotorGears::blue);
 pros::Motor armMotor(-13, pros::MotorGears::red);
 
 pros::adi::DigitalOut scraper('h',LOW);
-pros::adi::DigitalOut middleGoal('g', LOW);
+pros::adi::DigitalOut middleGoal('g', HIGH);
 pros::adi::DigitalOut wing('e',LOW);
 pros::adi::DigitalOut hood('f',LOW);
 
@@ -78,14 +78,14 @@ lemlib::OdomSensors sensors(
     &imu     // inertial sensor
 );
 // lateral PID controller
-lemlib::ControllerSettings lateral_controller(6, // proportional gain (kP) 6.1
-                                              -0.27, // integral gain (kI)-.006 over .0.1
-                                              19, // derivative gain (kD) 40
+lemlib::ControllerSettings lateral_controller(5, // proportional gain (kP) 6.1
+                                              0.084, // integral gain (kI)-.006 over .0.1
+                                              16, // derivative gain (kD) 40
                                               5, // anti windup 5
-                                              0, // small error range, in inches  1
-                                              00, // small error range timeout, in milliseconds 100
-                                              0, // large error range, in inches  3
-                                              0, // large error range timeout, in milliseconds 500
+                                              1, // small error range, in inches  1
+                                              100, // small error range timeout, in milliseconds 100
+                                              3, // large error range, in inches  3
+                                              500, // large error range timeout, in milliseconds 500
                                               0 // maximum acceleration (slew)20
 );
 
@@ -164,7 +164,7 @@ void initialize() {
     // pros::lcd::register_btn1_cb(on_center_button);
     scraperBool = false;
     wingBool = false;
-    middleGoalBool = false;
+    middleGoalBool = true;
     hoodBool = false;
     pros::Task screenTask([&]() {
       while (true) {
@@ -284,33 +284,33 @@ void leftMiddleControl() {
     middleGoal.set_value(HIGH);
 
     //get in front of loader
-    chassis.turnToPoint(-47, 47, 2000);
-    chassis.moveToPoint(-47, 47, 2000, {.minSpeed=70}); 
+    chassis.turnToPoint(-47, 48, 1000);
+    chassis.moveToPoint(-47, 48, 1000); 
     scraper.set_value(HIGH);
-    pros::delay(500);
 
     //get balls in loader
-    chassis.turnToHeading(270, 2000); 
+    chassis.turnToHeading(270, 1000); 
     intake.move(127);
-    chassis.moveToPoint(-59, 47, 1000, {.minSpeed = 70}, false);
-    chassis.turnToPoint(-30, 47, 1000, {.forwards = false}, false);
-    pros::delay(500);
+    chassis.moveToPoint(-59, 48, 750, {.minSpeed = 70});
+    chassis.turnToPoint(-30, 49, 750, {.forwards = false});
 
     //Go to score
-    chassis.moveToPoint(-30, 47, 2000, {.forwards = false, .minSpeed=90}, false);
+    chassis.moveToPoint(-30, 50, 2000, {.forwards = false, .minSpeed=90}, false);
+    pros::delay(400);
     scraper.set_value(LOW);
+    intake.move(0);
     scoreTop();
 
     // Get 3 balls
-    chassis.moveToPoint(-24, 26, 2000, {.maxSpeed=75, .minSpeed=30, .earlyExitRange=1});
-    pros::delay(800);
-    scraper.set_value(HIGH);
+    intake.move(127);
+    hood.set_value(LOW);
+    chassis.moveToPoint(-19, 26, 2000, {.maxSpeed=65, .minSpeed=30, .earlyExitRange=1}, false);
     middleGoal.set_value(LOW);
     pros::delay(500);
 
     // Go score in middle
     chassis.turnToHeading(315, 1000);
-    chassis.moveToPoint(-13, 13, 2000, {.forwards = false}, false);
+    chassis.moveToPoint(-10, 15, 2000, {.forwards = false});
     pros::delay(500);
     scraper.set_value(LOW);
     scoreMiddle();
@@ -334,7 +334,7 @@ void rightMiddleControl() {
 
     //get in front of loader
     chassis.turnToPoint(-47, -47, 2000);
-    chassis.moveToPoint(-47, -47, 2000, {.minSpeed=70}); 
+    chassis.moveToPoint(-47, -47, 2000); 
     scraper.set_value(HIGH);
     pros::delay(500);
 
@@ -376,27 +376,28 @@ void rightMiddleControl() {
 }
 
 void longSAWP() { // place only on right side
-    chassis.setPose(-47, 0, 0);
+    chassis.setPose(-46, 0, 0);
     intake.move(127);
-    chassis.moveToPoint(-47, 5, 2000, {.minSpeed=70}); 
+    chassis.moveToPoint(-46, 5, 2000, {.minSpeed=70}); //push other bot
 
     //get in front of loader
     // chassis.turnToPoint(-47, -47, 2000);
-    chassis.moveToPoint(-47, -47, 2000); 
+    chassis.moveToPoint(-46, -47, 2000, {}, false); 
     scraper.set_value(HIGH);
 
     //get balls in loader
     chassis.turnToHeading(270, 2000); 
     intake.move(127);
     chassis.moveToPoint(-59, -47, 1000, {.minSpeed = 70}, false);
-    wiggle(3);
+    // wiggle(3);
     toggleMiddle();
     chassis.turnToPoint(-47, -47, 1000, {.forwards = false}, false);
-    // pros::delay(500);
+    pros::delay(500);
 
     //Scoring in first goal
     // chassis.turnToHeading(270, 1000);
-    chassis.moveToPoint(-32, -47,2000, {.forwards = false}, false);
+    chassis.moveToPoint(-32, -47,2000, {.forwards = false});
+    pros::delay(1500);
     scoreTop();
     scraper.set_value(LOW);
     toggleHood();
@@ -453,9 +454,12 @@ void skills() {
 
     int run = 0;
     selectedAuton = 1;
-    chassis.setPose(-50, 0, 270);//--------------------parking balls---------------
+    chassis.setPose(-45, 0, 270);//--------------------parking balls---------------
+    armLift();
     intake.move(127);
-    chassis.moveToPoint(-57, 0, 5000, {.minSpeed=30});
+    chassis.moveToPoint(-57, 0, 5000, {.minSpeed=70});
+    pros::delay(500);
+    armMotor.move_absolute(-10, 40);//bottom pose
     wiggle(3);
     chassis.moveToPoint(-60, 0, 5000);
     wiggle(3);
@@ -588,13 +592,13 @@ void opcontrol() {
     chassis.setBrakeMode(pros::E_MOTOR_BRAKE_COAST);
     right_motor_group.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
     left_motor_group.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
-    scraperBool = false;
-    wingBool = false;
-    middleGoalBool = false;
-    hoodBool = false;
+    scraperBool = false;//should be up in beginning
+    wingBool = false;//should be down in beginning
+    middleGoalBool = false;//should be true in beginning
+    hoodBool = true;//should be up in beginning
     selectedAuton = 0;
     bool leverIsUp = false;
-  tuningLateralPD();
+    // tuningLateralPD();
 	while (true) {
         // get joystick positions
         int leftY = controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
@@ -618,6 +622,8 @@ void opcontrol() {
                 speedForTop = 100;
             }
             armMotor.move(speedForTop);
+            wingBool=false;
+            wing.set_value(wingBool);
             
         }else if (controller.get_digital(DIGITAL_L1)) { // middle score
             leverIsUp=true;
@@ -630,6 +636,7 @@ void opcontrol() {
             armMotor.move(speedForMiddle);
 		}else if (leverIsUp){
             armMotor.move_absolute(-10, 40);//bottom pose
+            leverIsUp=false;
         }
         
         
@@ -640,12 +647,14 @@ void opcontrol() {
             armMotor.move_absolute(-10, 40);
             
         }else if (controller.get_digital(DIGITAL_R1)) { // outake
+            
             int speedForBottom = -127;
             if(selectedAuton == 1){//skills
                 speedForBottom = -40;
             }
           	intake.move(speedForBottom);
             armLift();
+            // armMotor.move_absolute(95, 50);
         }else {
           	intake.move(0);
         	
@@ -660,15 +669,14 @@ void opcontrol() {
         if (controller.get_digital_new_press(DIGITAL_B)) { // scraper
           scraperBool = !scraperBool;
           scraper.set_value(scraperBool);
+          wingBool=false;
+          wing.set_value(wingBool);
         }
-        if (controller.get_digital(DIGITAL_Y)) { // left while held down
-          wingBool = true;
+        if (controller.get_digital_new_press(DIGITAL_Y)) { // left while held down
+          wingBool = !wingBool;
           wing.set_value(wingBool);
           scraperBool = false;
           scraper.set_value(scraperBool);
-        }else{ // down when not pressed
-            wingBool = false;
-            wing.set_value(wingBool);
         }
         if (controller.get_digital_new_press(DIGITAL_UP) && middleGoalBool == false) { // Going up
           middleGoalBool = true;
@@ -728,10 +736,8 @@ void scoreTop() {
     if(selectedAuton == 1){//skills
         speedForTop = 100;
     }
-    intake.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
-    intake.brake();
     armMotor.move_absolute(620, speedForTop);
-    pros::delay(300);
+    pros::delay(500);
     armMotor.move_absolute(-10, 40);
 }
 void scoreMiddle() {
@@ -741,20 +747,18 @@ void scoreMiddle() {
     if(selectedAuton == 1){//skills
         speedForMiddle = 40;
     }
-    intake.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
-    intake.brake();
     armMotor.move_absolute(610, speedForMiddle);
     pros::delay(500);
     armMotor.move_absolute(-10, 40);
 }
 void armLift(){
-    armMotor.move_absolute(50, 40);
+    armMotor.move_absolute(95, 50);
 }
 void wiggle(int num){
   int ogAngle = chassis.getPose().theta;
   for(int i =0; i < num; i++){
-    chassis.turnToHeading(ogAngle + 5, 1000);
-    chassis.turnToHeading(ogAngle - 5, 1000);
+    chassis.turnToHeading(ogAngle + 5, 1000, {.minSpeed=90});
+    chassis.turnToHeading(ogAngle - 5, 1000, {.minSpeed=90});
   }
   chassis.turnToHeading(ogAngle, 1000);
 
