@@ -48,13 +48,13 @@ lemlib::Drivetrain drivetrain(&left_motor_group,          // left motor group
                               8    // horizontal drift is 2 (for now),
                               
 );
-
+pros::Rotation lever(15);
 // create an imu on port 8
 pros::Imu imu(16);
 // create a v5 rotation sensor on port 1
 pros::Rotation vertical_encoder(14);
 lemlib::TrackingWheel vertical_tracking_wheel(&vertical_encoder, lemlib::Omniwheel::NEW_2,-.5);
-pros::Rotation horizontal_encoder(12);
+pros::Rotation horizontal_encoder(11);
 lemlib::TrackingWheel horizontal_tracking_wheel(&horizontal_encoder, lemlib::Omniwheel::NEW_2, -5.75);
 
 pros::Motor intake (9, pros::MotorGears::blue);
@@ -64,6 +64,10 @@ pros::adi::DigitalOut scraper('h',LOW);
 pros::adi::DigitalOut middleGoal('g', HIGH);
 pros::adi::DigitalOut wing('e',LOW);
 pros::adi::DigitalOut hood('f',LOW);
+
+
+
+
 
 bool scraperBool, wingBool, middleGoalBool, hoodBool;
 
@@ -120,11 +124,53 @@ lemlib::Chassis chassis(drivetrain,         // drivetrain settings
                         &steer_curve
 );
 
+class PIDController {
+public:
+    // Constructor to initialize gains
+    PIDController(double kp, double ki, double kd) 
+        : Kp_(kp), Ki_(ki), Kd_(kd), integral_(0), prevError_(0) {}
+
+    // Function to compute the new control output
+    double compute(double setpoint, double current_value, double dt) {
+        // 1. Calculate the current error
+        double error = setpoint - current_value;
+
+        // 2. Proportional term
+        double proportional = Kp_ * error;
+
+        // 3. Integral term (accumulate error over time)
+        integral_ += error * dt;
+        // NOTE: Anti-windup clamping may be needed in real applications
+        integral_ += error * dt;
+        if(integral_ > 100) integral_ = 100;
+        if(integral_ < -100) integral_ = -100;
+        // 4. Derivative term (rate of change of error)
+        double derivative = (error - prevError_) / dt;
+
+        // 5. Calculate the total output
+        double output = proportional + (Ki_ * integral_) + (Kd_ * derivative);
+
+        // 6. Update the previous error for the next iteration
+        prevError_ = error;
+
+        // NOTE: Output limits may also be needed
+        return output;
+    }
+    void reset() {
+        integral_ = 0;
+        prevError_ = 0;
+    }
+private:
+    double Kp_, Ki_, Kd_;
+    double integral_;
+    double prevError_;
+};
 
 
 int selectedAuton = 0;
 bool autonSelected = false;
 const char* autonNames[] = {"User", "Skills", "SAWP (Long)", "Left: Mid Control", "Right: Mid Control"};
+int leverArmPosition = 0;
 
 void autonSelector() {
     controller.clear();
@@ -156,30 +202,70 @@ void autonSelector() {
  * All other competition modes are blocked by initialize; it is recommended
  * to keep execution time for this mode under a few seconds.
  */
+enum LeverMode {
+    PID_MODE,
+    FULL_UP,
+    MIDDLE_SCORE
+};
+PIDController pid(.01, 0, 0); 
+LeverMode leverMode = PID_MODE;
 
 void initialize() {
+    // armMotor.move(30);
+    // pros::delay(100000);
 	pros::lcd::initialize(); // initialize brain screen. Remove for robodash
     chassis.calibrate(); // calibrate sensors
-
+    lever.reset_position();
+    lever.reset();
+    leverArmPosition = 0;
     // pros::lcd::register_btn1_cb(on_center_button);
     scraperBool = false;
     wingBool = false;
     middleGoalBool = true;
     hoodBool = false;
+   
     pros::Task screenTask([&]() {
       while (true) {
         // print robot location to the brain screen
         pros::lcd::print(0, "X: %f", chassis.getPose().x);         // x
         pros::lcd::print(1, "Y: %f", chassis.getPose().y);         // y
         pros::lcd::print(2, "Theta: %f", chassis.getPose().theta); // heading
-        pros::lcd::print(3, "arm Deg: %f", armMotor.get_position());
+        pros::lcd::print(3, "arm Deg: %d", lever.get_position() / 100);
         // log position telemetry
         lemlib::telemetrySink()->info("Chassis pose: {}", chassis.getPose());
         // delay to save resources
         pros::delay(50);
       }
     });
+    double output = 0;
+    pros::Task leverTask([&]() {
+    while (true) {
 
+    
+        
+        if (leverMode == PID_MODE) {
+            double pos = lever.get_position()/100.0;
+
+            output = pid.compute(leverArmPosition, pos, 0.02);
+            if (pos< 0.5 && output < 0) {
+                output = 0;
+            }
+        }
+        else if (leverMode == FULL_UP) {
+            output = 127;
+        }
+        else if (leverMode == MIDDLE_SCORE) {
+            output = 40;
+        }
+
+        if (output > 127) output = 127;
+        if (output < -127) output = -127;
+
+        armMotor.move(output);
+
+        pros::delay(20);
+        }
+    });
     chassis.setBrakeMode(pros::E_MOTOR_BRAKE_COAST);
     right_motor_group.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
     left_motor_group.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
@@ -617,11 +703,7 @@ void opcontrol() {
             leverIsUp=true;
             hoodBool=true;
             hood.set_value(HIGH);
-            int speedForTop = 127;
-            if(selectedAuton == 1){//skills
-                speedForTop = 100;
-            }
-            armMotor.move(speedForTop);
+            leverMode = FULL_UP;
             wingBool=false;
             wing.set_value(wingBool);
             
@@ -629,13 +711,11 @@ void opcontrol() {
             leverIsUp=true;
             hoodBool=true;
             hood.set_value(HIGH);
-            int speedForMiddle = 50;
-            if(selectedAuton == 1){//skills
-                speedForMiddle = 40;
-            }
-            armMotor.move(speedForMiddle);
+            leverMode = MIDDLE_SCORE;
 		}else if (leverIsUp){
-            armMotor.move_absolute(-10, 40);//bottom pose
+            pid.reset();
+            leverMode = PID_MODE;
+            leverArmPosition = 0;
             leverIsUp=false;
         }
         
@@ -644,7 +724,7 @@ void opcontrol() {
             hood.set_value(LOW);
             hoodBool=false;
 			intake.move(127);
-            armMotor.move_absolute(-10, 40);
+            leverArmPosition=0;
             
         }else if (controller.get_digital(DIGITAL_R1)) { // outake
             
@@ -752,7 +832,8 @@ void scoreMiddle() {
     armMotor.move_absolute(-10, 40);
 }
 void armLift(){
-    armMotor.move_absolute(95, 50);
+    leverMode = PID_MODE;
+    leverArmPosition=12;
 }
 void wiggle(int num){
   int ogAngle = chassis.getPose().theta;
