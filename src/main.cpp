@@ -13,7 +13,7 @@
 #include "pros/rtos.hpp"
 void scoreTop();
 void scoreMiddle();
-void armLift();
+void armLift(int n);
 void wiggle(int num);
 void toggleHood();
 void toggleMiddle();
@@ -141,7 +141,6 @@ public:
         // 3. Integral term (accumulate error over time)
         integral_ += error * dt;
         // NOTE: Anti-windup clamping may be needed in real applications
-        integral_ += error * dt;
         if(integral_ > 100) integral_ = 100;
         if(integral_ < -100) integral_ = -100;
         // 4. Derivative term (rate of change of error)
@@ -160,6 +159,7 @@ public:
         integral_ = 0;
         prevError_ = 0;
     }
+    void set_constants(double p, double i, double d){ Kp_=p; Ki_=i; Kd_=d; }
 private:
     double Kp_, Ki_, Kd_;
     double integral_;
@@ -207,7 +207,7 @@ enum LeverMode {
     FULL_UP,
     MIDDLE_SCORE
 };
-PIDController pid(.01, 0, 0); 
+PIDController pid(1, 0.1, .01); 
 LeverMode leverMode = PID_MODE;
 
 void initialize() {
@@ -215,8 +215,7 @@ void initialize() {
     // pros::delay(100000);
 	pros::lcd::initialize(); // initialize brain screen. Remove for robodash
     chassis.calibrate(); // calibrate sensors
-    lever.reset_position();
-    lever.reset();
+      lever.reset_position();
     leverArmPosition = 0;
     // pros::lcd::register_btn1_cb(on_center_button);
     scraperBool = false;
@@ -238,16 +237,30 @@ void initialize() {
       }
     });
     double output = 0;
+    double pos;
     pros::Task leverTask([&]() {
     while (true) {
 
     
         
         if (leverMode == PID_MODE) {
-            double pos = lever.get_position()/100.0;
+            pos = lever.get_position()/100.0;
+            double error = leverArmPosition - pos;
 
-            output = pid.compute(leverArmPosition, pos, 0.02);
-            if (pos< 0.5 && output < 0) {
+            if (fabs(error) < 1) {
+                output = 0;
+                
+            } else {
+                output = pid.compute(leverArmPosition, pos, 0.02);
+
+                double minPower = 17;
+
+                if (fabs(output) < minPower) {
+                    output = (output > 0) ? minPower : -minPower;
+                }
+            }
+
+            if (pos < 0.5 && output < 0) {
                 output = 0;
             }
         }
@@ -255,12 +268,19 @@ void initialize() {
             output = 127;
         }
         else if (leverMode == MIDDLE_SCORE) {
-            output = 40;
+            pos = lever.get_position()/100.0;
+            if(pos <= 20){
+                output=127;
+            }else{
+                output = 40;
+            }
+            
         }
 
         if (output > 127) output = 127;
         if (output < -127) output = -127;
-
+        
+        
         armMotor.move(output);
 
         pros::delay(20);
@@ -368,46 +388,51 @@ void tuningAngularI() {
 void leftMiddleControl() {
     chassis.setPose(-47, 14, 0);
     middleGoal.set_value(HIGH);
-
+    scraper.set_value(HIGH);
+    
     //get in front of loader
     chassis.turnToPoint(-47, 48, 1000);
-    chassis.moveToPoint(-47, 48, 1000); 
-    scraper.set_value(HIGH);
+    chassis.moveToPoint(-47, 38, 1000, {.minSpeed = 50, .earlyExitRange=4}); 
+    
 
     //get balls in loader
-    chassis.turnToHeading(270, 1000); 
     intake.move(127);
-    chassis.moveToPoint(-59, 48, 750, {.minSpeed = 70});
-    chassis.turnToPoint(-30, 49, 750, {.forwards = false});
+    chassis.moveToPoint(-65, 45, 1000, {.minSpeed = 60});
+
+    pros::delay(1000);
 
     //Go to score
-    chassis.moveToPoint(-30, 50, 2000, {.forwards = false, .minSpeed=90}, false);
-    pros::delay(400);
+    chassis.turnToPoint(-28, 45, 2000, {.forwards=false});
+    chassis.moveToPoint(-29, 45, 2000, {.forwards = false, .earlyExitRange = 4}, false);
     scraper.set_value(LOW);
     intake.move(0);
     scoreTop();
 
     // Get 3 balls
+    
     intake.move(127);
     hood.set_value(LOW);
-    chassis.moveToPoint(-19, 26, 2000, {.maxSpeed=65, .minSpeed=30, .earlyExitRange=1}, false);
+    chassis.moveToPoint(-32, 29, 2000, { .minSpeed=30, .earlyExitRange=1}, false);
     middleGoal.set_value(LOW);
     pros::delay(500);
 
     // Go score in middle
-    chassis.turnToHeading(315, 1000);
-    chassis.moveToPoint(-10, 15, 2000, {.forwards = false});
+    chassis.turnToHeading(315, 1000, {.direction=AngularDirection::CW_CLOCKWISE});
+    chassis.turnToPoint(-15, 10, 300, {.forwards = false});
+    chassis.moveToPoint(-15, 10, 2000, {.forwards = false});
     pros::delay(500);
     scraper.set_value(LOW);
     scoreMiddle();
-
+    
     // Go wing
     intake.move(0);
     middleGoal.set_value(HIGH);
-    chassis.moveToPoint(-29, 37, 2000, {.minSpeed=70});
-    chassis.turnToHeading(70, 1000);
-    chassis.moveToPoint(-8, 40, 2000, {.minSpeed=50});
-    chassis.turnToHeading(110, 1000);
+    chassis.moveToPoint(-25, 30, 2000, {.minSpeed = 50, .earlyExitRange = 2});
+    
+    
+    chassis.moveToPoint(-9, 40, 2000, {.minSpeed = 50});
+    chassis.turnToHeading(120, 1000, {}, false);
+    pros::delay(100);
 
     chassis.setBrakeMode(pros::E_MOTOR_BRAKE_HOLD);
     right_motor_group.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
@@ -417,115 +442,134 @@ void leftMiddleControl() {
 void rightMiddleControl() {
     chassis.setPose(-47, -14, 180);
     middleGoal.set_value(HIGH);
-
-    //get in front of loader
-    chassis.turnToPoint(-47, -47, 2000);
-    chassis.moveToPoint(-47, -47, 2000); 
     scraper.set_value(HIGH);
-    pros::delay(500);
+    
+    //get in front of loader
+    chassis.turnToPoint(-47, -48, 1000);
+    chassis.moveToPoint(-47, -38, 1000, {.minSpeed = 50, .earlyExitRange=4}); 
+    
 
     //get balls in loader
-    chassis.turnToHeading(270, 2000); 
     intake.move(127);
-    chassis.moveToPoint(-59, -47, 1000, {.minSpeed = 70}, false);
-    chassis.turnToPoint(-30, -47, 1000, {.forwards = false}, false);
-    pros::delay(500);
+    chassis.moveToPoint(-65, -45, 1000, {.minSpeed = 60});
 
     //Go to score
-    chassis.moveToPoint(-30, -47, 2000, {.forwards = false, .minSpeed=90}, false);
+    chassis.turnToPoint(-28, -45, 2000, {.forwards=false});
+    chassis.moveToPoint(-29, -45, 2000, {.forwards = false, .earlyExitRange = 6}, false);
     scraper.set_value(LOW);
+    intake.move(0);
     scoreTop();
-
+    
     // Get 3 balls
-    chassis.moveToPoint(-24, -26, 2000, {.maxSpeed=75, .minSpeed=30, .earlyExitRange=1});
-    pros::delay(800);
-    scraper.set_value(HIGH);
-    pros::delay(500);
+    intake.move(127);
+    // hood.set_value(LOW);
+    chassis.moveToPoint(-29, -26, 2000, { .minSpeed=30, .earlyExitRange=1}, false);
+    chassis.turnToPoint(-17, -13, 1000);
 
     // Go score in middle
-    chassis.moveToPoint(-11, -11, 2000);
-    scraper.set_value(LOW);
+    chassis.moveToPoint(-19, -15, 2000);
     pros::delay(500);
-    intake.move(-127);
-    pros::delay(1500);
+    chassis.turnToHeading(45, 1000);
+    armLift(5);
+    intake.move(-100);
+    
+    pros::delay(1200);    
 
     // Go wing
     intake.move(0);
-    chassis.moveToPoint(-29, -37, 2000, {.minSpeed=70});
-    chassis.turnToHeading(110, 1000);
-    chassis.moveToPoint(-8, -40, 2000, {.minSpeed=50});
-    chassis.turnToHeading(70, 1000);
-
+    chassis.moveToPoint(-20, -39, 2000, {.forwards=false, .minSpeed=50, .earlyExitRange=4});
+    wing.set_value(HIGH);
+    chassis.moveToPoint(-10, -41, 2000, {.forwards=false, .minSpeed=50});
+    pros::delay(400);
+    wing.set_value(LOW);
+    chassis.turnToHeading(260, 1000, {}, false);
+    pros::delay(100);
+    forwardOritentiation=false;
     chassis.setBrakeMode(pros::E_MOTOR_BRAKE_HOLD);
     right_motor_group.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
     left_motor_group.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
 }
 
 void longSAWP() { // place only on right side
-    chassis.setPose(-46, 0, 0);
+    chassis.setPose(-45, 0, 0);
     intake.move(127);
-    chassis.moveToPoint(-46, 5, 2000, {.minSpeed=70}); //push other bot
+    chassis.moveToPoint(-45, 3, 2000, {.minSpeed=70, .earlyExitRange=2}); //push other bot
 
     //get in front of loader
-    // chassis.turnToPoint(-47, -47, 2000);
-    chassis.moveToPoint(-46, -47, 2000, {}, false); 
-    scraper.set_value(HIGH);
+    middleGoal.set_value(HIGH);
+    
 
-    //get balls in loader
-    chassis.turnToHeading(270, 2000); 
+    //get in front of loader
+    chassis.turnToPoint(-45, -42, 1000, {.forwards=false});
+    chassis.moveToPoint(-45, -42, 1000, {.forwards=false,.minSpeed = 50, .earlyExitRange=4}); 
+
+    
     intake.move(127);
-    chassis.moveToPoint(-59, -47, 1000, {.minSpeed = 70}, false);
-    // wiggle(3);
-    toggleMiddle();
-    chassis.turnToPoint(-47, -47, 1000, {.forwards = false}, false);
-    pros::delay(500);
+    chassis.turnToPoint(-66, -44, 1000, {.minSpeed=70, .earlyExitRange=10});
+    scraper.set_value(HIGH);
+    chassis.moveToPoint(-66, -44, 1000, {.minSpeed = 70});
+    pros::delay(200);
+    chassis.turnToPoint(-25, -47, 750, {.forwards = false});
+    // pros::delay(1000);
 
-    //Scoring in first goal
-    // chassis.turnToHeading(270, 1000);
-    chassis.moveToPoint(-32, -47,2000, {.forwards = false});
-    pros::delay(1500);
+    //Go to score
+    chassis.moveToPoint(-23, -47, 1000, {.forwards = false, .earlyExitRange=5}, false);
+    scraper.set_value(LOW);
+    // intake.move(0);
     scoreTop();
-    scraper.set_value(LOW);
-    toggleHood();
 
-    // First 3 balls
+    // Get 3 balls
     intake.move(127);
-    chassis.moveToPoint(-24, -26, 2000, {.maxSpeed=75, .minSpeed=30, .earlyExitRange=1});
-    pros::delay(800); // possibly need to adjust
-    scraper.set_value(HIGH);
-    pros::delay(500);
-    chassis.turnToPoint(-23, 26, 2000, {}, false);
-    scraper.set_value(LOW);
+    hood.set_value(LOW);
+    chassis.moveToPoint(-12, -20, 2000, { .minSpeed=50, .earlyExitRange=16}, false);
+    toggleHood();
+    toggleMiddle();
 
     // Second 3 balls
-    chassis.moveToPoint(-23, 26, 2000, {});
-    pros::delay(1000); // adjust
+    chassis.turnToPoint(-24, 18, 2000, {.minSpeed=80, .earlyExitRange=10});
+    chassis.moveToPoint(-24, 18, 2000, {.minSpeed=40, .earlyExitRange=3});
+    pros::delay(800); // adjust
     scraper.set_value(HIGH);
     middleGoal.set_value(LOW);
     
 
     // Middle scoring part
-    chassis.turnToPoint(-13,13, 1000, {.forwards = false});
-    intake.move(0);
-    chassis.moveToPoint(-13, 13, 2000, {.forwards = false}, false);
-    pros::delay(500);
-    scoreMiddle();
-    chassis.turnToPoint(-49, 47, 1400);
-
+    chassis.turnToPoint(-6,0, 1000, {.forwards = false, .minSpeed=30, .earlyExitRange=8});
+    
+    chassis.moveToPoint(-16, 14, 2000, {.forwards = false});
+    
+    
+    
+    chassis.turnToPoint(-46, 51, 1000, {.minSpeed=50, .earlyExitRange=3});
+    pros::delay(100);
+    //middle score needs to be specific to not get balls under --------------
+    hoodBool=true;
+    hood.set_value(HIGH);
+    leverMode = FULL_UP;
+    pros::delay(250);
+    intake.move(-127);
+    leverMode = MIDDLE_SCORE;
+    pros::delay(200);
+    leverArmPosition=0;
+    leverMode = PID_MODE;
+    //armLift function but needs to be specific--------------------------
+    
     // Second loader approach
-    chassis.moveToPoint(-49, 47, 5000);
+    chassis.moveToPoint(-46, 50, 750, {.minSpeed=50, .earlyExitRange=5});
     intake.move(127);
     toggleHood();
+
     // Second loader
     scraper.set_value(HIGH);
-    chassis.turnToPoint(-59, 47, 1000);
-    chassis.moveToPoint(-59, 47, 3000, {.minSpeed = 80});
+    chassis.moveToPoint(-67, 47, 1000, {.minSpeed = 80}, false);
     toggleMiddle();
-    wiggle(3);
+    wiggle(1);
+    // pros::delay(1000);
 
     // Second goal scoring
-    chassis.turnToPoint(-32, 47, 2000, {.forwards = false});
-    chassis.moveToPoint(-32, 47, 5000, {.forwards = false});
+    chassis.turnToPoint(-30, 47, 2000, {.forwards = false});
+    chassis.moveToPoint(-29, 47, 1000, {.forwards = false, .minSpeed=30, .earlyExitRange=3}, false);
+
     scoreTop();
     pros::delay(700);
 
@@ -541,7 +585,7 @@ void skills() {
     int run = 0;
     selectedAuton = 1;
     chassis.setPose(-45, 0, 270);//--------------------parking balls---------------
-    armLift();
+    armLift(7);
     intake.move(127);
     chassis.moveToPoint(-57, 0, 5000, {.minSpeed=70});
     pros::delay(500);
@@ -556,7 +600,7 @@ void skills() {
     // chassis.turnToPoint(-30.5, -15, 5000);-----------middle scoring bottom-------------
     chassis.moveToPoint(-24, -24, 5000);//push balls out of way hopefully
     chassis.turnToPoint(-13, -13, 5000);
-    armLift();
+    armLift(7);
     chassis.moveToPoint(-13, -13, 5000);//score bottom
     pros::delay(500);
     intake.move(-60);
@@ -650,7 +694,7 @@ void skills() {
 
     chassis.setPose(-32, -47, 0); // reset to right side long goal
     chassis.moveToPose(-60, 0, 180, 5000);
-    armLift();
+    armLift(7);
 
 
 
@@ -680,7 +724,7 @@ void opcontrol() {
     left_motor_group.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
     scraperBool = false;//should be up in beginning
     wingBool = false;//should be down in beginning
-    middleGoalBool = false;//should be true in beginning
+    middleGoalBool = true;//should be true in beginning
     hoodBool = true;//should be up in beginning
     selectedAuton = 0;
     bool leverIsUp = false;
@@ -698,7 +742,25 @@ void opcontrol() {
         if (controller.get_digital_new_press(DIGITAL_X)) {
             forwardOritentiation=!forwardOritentiation;
         }
-
+        
+        //------------------------------------intakeing and outaking----------------------
+        if (controller.get_digital(DIGITAL_R2)) { // intake
+            hood.set_value(LOW);
+            hoodBool=false;
+			intake.move(127);
+            armLift(0);
+        }else if (controller.get_digital(DIGITAL_R1)) { // outake
+            int speedForBottom = -127;
+            if(selectedAuton == 1){//skills
+                speedForBottom = -40;
+            }
+          	intake.move(speedForBottom);
+            armLift(7);
+            // armMotor.move_absolute(95, 50);
+        }else{
+            intake.move(0);
+        }
+            //------------------------------------lever control----------------------
         if (controller.get_digital(DIGITAL_L2)) { // top score
             leverIsUp=true;
             hoodBool=true;
@@ -718,33 +780,14 @@ void opcontrol() {
             leverArmPosition = 0;
             leverIsUp=false;
         }
-        
-        
-        if (controller.get_digital(DIGITAL_R2)) { // intake
-            hood.set_value(LOW);
-            hoodBool=false;
-			intake.move(127);
-            leverArmPosition=0;
-            
-        }else if (controller.get_digital(DIGITAL_R1)) { // outake
-            
-            int speedForBottom = -127;
-            if(selectedAuton == 1){//skills
-                speedForBottom = -40;
-            }
-          	intake.move(speedForBottom);
-            armLift();
-            // armMotor.move_absolute(95, 50);
-        }else {
-          	intake.move(0);
-        	
-        }
+
+        //-----------------------------------pnumatics--------------------------
         if(controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_RIGHT)){ // hood
             hoodBool=!hoodBool;
             hood.set_value(hoodBool);
         }
-        if(controller.get_digital(pros::E_CONTROLLER_DIGITAL_LEFT) && controller.get_digital(pros::E_CONTROLLER_DIGITAL_A)){
-            armLift();
+        if(controller.get_digital(pros::E_CONTROLLER_DIGITAL_LEFT) && controller.get_digital(pros::E_CONTROLLER_DIGITAL_A)){ // lever arm up
+            armLift(7);
         }
         if (controller.get_digital_new_press(DIGITAL_B)) { // scraper
           scraperBool = !scraperBool;
@@ -752,7 +795,7 @@ void opcontrol() {
           wingBool=false;
           wing.set_value(wingBool);
         }
-        if (controller.get_digital_new_press(DIGITAL_Y)) { // left while held down
+        if (controller.get_digital_new_press(DIGITAL_Y)) { // toggle wing
           wingBool = !wingBool;
           wing.set_value(wingBool);
           scraperBool = false;
@@ -767,7 +810,6 @@ void opcontrol() {
           wingBool = false;
           wing.set_value(wingBool);
         }
-        
         pros::delay(10);
     }
 }
@@ -789,7 +831,7 @@ void autonomous() {
             opcontrol();
             break;
         case 1: // Skills
-            chassis.setPose(-47, 15, 0);
+            chassis.setPose(-47, 14, 0);
             skills();
             break;
         case 2: // SAWP (Long)
@@ -797,11 +839,9 @@ void autonomous() {
             longSAWP();
             break;
         case 3: // Left: Middle Control
-            chassis.setPose(-61, 16.2, 90);
             leftMiddleControl();
             break;
         case 4: // Right: Middle Control
-            chassis.setPose(-61, -16.2, 90);
             rightMiddleControl();
             break;
         default:
@@ -816,9 +856,10 @@ void scoreTop() {
     if(selectedAuton == 1){//skills
         speedForTop = 100;
     }
-    armMotor.move_absolute(620, speedForTop);
+    leverMode = FULL_UP;
     pros::delay(500);
-    armMotor.move_absolute(-10, 40);
+    leverArmPosition=0;
+    leverMode = PID_MODE;
 }
 void scoreMiddle() {
     hoodBool=true;
@@ -827,19 +868,20 @@ void scoreMiddle() {
     if(selectedAuton == 1){//skills
         speedForMiddle = 40;
     }
-    armMotor.move_absolute(610, speedForMiddle);
-    pros::delay(500);
-    armMotor.move_absolute(-10, 40);
-}
-void armLift(){
+    leverMode = MIDDLE_SCORE;
+    pros::delay(1000);
+    leverArmPosition=0;
     leverMode = PID_MODE;
-    leverArmPosition=12;
+}
+void armLift(int n){
+    leverMode = PID_MODE;
+    leverArmPosition=n;
 }
 void wiggle(int num){
   int ogAngle = chassis.getPose().theta;
   for(int i =0; i < num; i++){
-    chassis.turnToHeading(ogAngle + 5, 1000, {.minSpeed=90});
-    chassis.turnToHeading(ogAngle - 5, 1000, {.minSpeed=90});
+    chassis.turnToHeading(ogAngle + 4, 1000, {.minSpeed=90});
+    chassis.turnToHeading(ogAngle - 4, 1000, {.minSpeed=90});
   }
   chassis.turnToHeading(ogAngle, 1000);
 
